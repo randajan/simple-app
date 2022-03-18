@@ -23,7 +23,7 @@ io.on("connection", client=>{
 require("./middleware.js").default(app, io);
 require("./routes.js").default(app, io);
 
-exports.boot = async port=>new Promise((resolve, reject)=>{
+module.exports = async port=>new Promise((resolve, reject)=>{
     const reboot = async boot=>{
         if (!boot) { clients.reload(); return; }
         server.close();

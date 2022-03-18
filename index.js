@@ -35,14 +35,14 @@ const log = (msg, color)=>console.log(color, `${info.env}:${info.version}`, "|",
   fs.copySync('frontend/public', 'frontend/build');
 
   const builder = await build(buildParams);
-  let reboot = await require("./backend/index.js").boot(port);
+  let reboot = await require("./backend/index.js")(port);
   log(`App started at port ${port}`, "\x1b[1m\x1b[32m");
  
   if (info.isDev) {
 
     watch('backend/**/*', { ignoreInitial: true }).on('all', async _=>{
       for (let i in require.cache) { delete require.cache[i]; }
-      reboot = await reboot(require("./backend/index.js").boot);
+      reboot = await reboot(require("./backend/index.js"));
       log("BE rebooted", "\x1b[1m\x1b[35m");
     });
 
