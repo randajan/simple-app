@@ -85,7 +85,7 @@ export default async (isProd=false, o={})=>{
       entryPoints: [be.entry],
       outdir: be.dist,
       splitting: true,
-      plugins:[...be.plugins, nodeExternalsPlugin({ allowList:["@randajan/simple-app/backend"]})],
+      plugins:[...be.plugins, nodeExternalsPlugin({ allowList:["@randajan/simple-app/info", "@randajan/simple-app/be"]})],
       external:[...builtinModules, "express", "socket.io"],
       format:'esm',
       define:{__sapp_info:JSON.stringify({ ...info, ...be.info, isProd, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
