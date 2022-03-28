@@ -33,13 +33,13 @@ sapp(
     info:{},                          //variables accessible via import info from "@randajan/simple-app/info"
     be:{                              //backend options
       dir:"backend",                  //backend subdirectory
-      entry:"index.js",               //backend entry file
+      entries:["index.js"],           //backend entry files
       info:{},                        //variables accessible only at backend via import info from "@randajan/simple-app/info"
       plugins:[]                      //backend esbuild plugins
     },
     fe:{                              //frontend options
       dir:"frontend",                 //frontend subdirectory
-      entry:"index.js",               //frontend entry file
+      entries:["index.js"],           //frontend entry files
       info:{},                        //variables accessible only at frontend via import info from "@randajan/simple-app/info"
       plugins:[]                      //frontend esbuild plugins
     }

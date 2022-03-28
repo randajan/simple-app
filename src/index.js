@@ -1,3 +1,4 @@
+import { Worker } from "worker_threads";
 import { watch } from "chokidar";
 import { build } from 'esbuild';
 import open from "open";
@@ -8,9 +9,6 @@ import { nodeExternalsPlugin } from "esbuild-node-externals";
 
 import templates from "./templates.js";
 
-import npath from 'path';
-import nurl from 'url';
-
 const { NODE_ENV, npm_package_version, npm_package_name, npm_package_author_name } = process.env;
 
 const root = approot.path;
@@ -18,9 +16,6 @@ const name = npm_package_name;
 const version = npm_package_version;
 const author = npm_package_author_name;
 const env = NODE_ENV;
-
-const getDir = meta=>npath.dirname(nurl.fileURLToPath(meta.url));
-const rootImport = (meta, path)=>import(npath.relative(getDir(meta), root+"/"+path).replace("\\", "/"));
 
 const log = (color, ...msgs)=>console.log(
     color,
@@ -31,11 +26,6 @@ const log = (color, ...msgs)=>console.log(
     ].join(" | "),
     "\x1b[0m"
 );
-
-const ensureFile = async (path, template)=>{
-  if (fs.existsSync(path)) { return; }
-  await fs.outputFile(path, template);
-}
 
 export default async (isProd=false, o={})=>{
   const port = o.port || 3000;
@@ -55,7 +45,7 @@ export default async (isProd=false, o={})=>{
     xe.plugins = xe.plugins || [];
     xe.src = srcdir+"/"+xe.dir;
     xe.dist = distdir+"/"+xe.dir;
-    xe.entry = xe.src+"/"+(xe.entry || "index.js");
+    xe.entries = (xe.entries || ["index.js"]).map(e=>xe.src+"/"+e);
   }
 
   const buildPublic = async removeDir=>{
@@ -63,11 +53,15 @@ export default async (isProd=false, o={})=>{
     await fs.copy(srcdir+'/public', fe.dist);
   };
 
-  const tmp = templates();
-  await ensureFile(srcdir+'/public/index.html', tmp.index);
-  await ensureFile(srcdir+"/arc/index.js", tmp.arc);
-  await ensureFile(be.entry, tmp.be);
-  await ensureFile(fe.entry, tmp.fe);
+  if (!fs.existsSync(srcdir)) {
+    const tmp = templates();
+    await Promise.all([
+      fs.outputFile(srcdir+'/public/index.html', tmp.index),
+      fs.outputFile(srcdir+"/arc/index.js", tmp.arc),
+      fs.outputFile(be.src+"/index.js", tmp.be),
+      fs.outputFile(fe.src+"/index.js", tmp.fe),
+    ]);
+  }
 
   await buildPublic(distdir);
 
@@ -82,7 +76,7 @@ export default async (isProd=false, o={})=>{
 
   const [bed, fed] = await Promise.all([
     build({
-      entryPoints: [be.entry],
+      entryPoints: be.entries,
       outdir: be.dist,
       splitting: true,
       plugins:[...be.plugins, nodeExternalsPlugin({ allowList:["@randajan/simple-app/info", "@randajan/simple-app/be"]})],
@@ -92,7 +86,7 @@ export default async (isProd=false, o={})=>{
       ...uni
     }),
     build({
-      entryPoints: [fe.entry],
+      entryPoints: fe.entries,
       outdir: fe.dist,
       format:"iife",
       plugins:fe.plugins,
@@ -105,9 +99,9 @@ export default async (isProd=false, o={})=>{
   const rebootBE = async _=>{
     if (be.current) {
       await bed.rebuild();
-      be.current.http.close();
+      be.current.postMessage("stop");
     }
-    be.current = (await rootImport(import.meta, be.dist+"/index.js?update="+Date.now())).default;
+    be.current = new Worker((root+"/"+be.dist+"/index.js").replaceAll("\\", "/"));
   }
   const rebootFE = async (hard)=>{
     if (hard) { await buildPublic(fe.dist); }
@@ -115,6 +109,11 @@ export default async (isProd=false, o={})=>{
   }
 
   await rebootBE();
+
+  process.on('SIGINT', _=>{
+    be.current.on("exit", _=>process.exit(0));
+    be.current.postMessage("shutdown");
+  });
 
   log("\x1b[1m\x1b[33m", `Started at ${home.origin}`);
 
@@ -124,17 +123,16 @@ export default async (isProd=false, o={})=>{
     watch(path, { ignoreInitial:true }).on('all', async _=>{
       const before = be.current;
       try { await exe(); } catch(e) { log("\x1b[1m\x1b[31m", msg, "failed"); console.log(e.stack); return; };
-      before.io.emit("reboot", msg+"d");
-      Object.values(before.fe.clients).forEach(c=>c.destroy());
+      before.postMessage("refresh");
       log(color, msg+"d");
     });
   }
 
-  rebootOn(fe.src+'/**/*', _=>rebootFE(), "\x1b[1m\x1b[32m", "FE change");
   rebootOn(srcdir+'/public/**/*', _=>rebootFE(true), "\x1b[1m\x1b[35m", "Public change");
   rebootOn(srcdir+'/arc/**/*', _=>Promise.all([ rebootBE(), rebootFE()]), "\x1b[1m\x1b[36m", "Arc change");
+  rebootOn(fe.src+'/**/*', _=>rebootFE(), "\x1b[1m\x1b[32m", "FE change");
   rebootOn(be.src+'/**/*', _=>rebootBE(), "\x1b[1m\x1b[34m", "BE change");
 
-  open(`${home.origin}`);
+  open(home.origin);
 
 }

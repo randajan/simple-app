@@ -31,8 +31,6 @@ import helloworld from "../arc";
 app.use("/", express.static(info.dir.fe));
 
 setTimeout(_=>console.log(helloworld()));
-
-export default be;
 `,
     fe:`
 import fe, { be, info } from "@randajan/simple-app/fe";

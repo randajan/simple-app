@@ -1,3 +1,5 @@
+import { parentPort } from "worker_threads";
+
 import { createServer } from "http";
 
 import express from "express";
@@ -36,6 +38,28 @@ const fe = Object.defineProperties({}, {
     sockets:{enumerable, get:_=>Object.assign({}, sockets)},
 });
 
+const cleanUp = _=>Object.values(fe.clients).forEach(c=>c.destroy());
+const emit = msg=>io.emit("system", msg);
+
+let state = 1;
+parentPort.on("message", msg=>{
+    if (msg==="stop") { http.close(); state = 0; setTimeout(_=>_, 60000); }
+    if (msg==="shutdown") { process.exit(0); }
+    if (msg==="refresh") {
+        if (state) { emit(msg); cleanUp(); }
+        else { process.exit(0); }
+    }
+});
+
+process.on("exit", _=>{
+    emit(state ? "shutdown" : "refresh");
+    cleanUp();
+})
+
+process.on('uncaughtException', e=>{
+  console.log(e.stack);
+});
+
 export default Object.defineProperties({}, {
     express:{enumerable, value:express},
     app:{enumerable, value:app},
@@ -45,7 +69,7 @@ export default Object.defineProperties({}, {
     fe:{enumerable, value:fe},
     info:{enumerable, value:info}
 });
-    
+
 export {
     express,
     app,

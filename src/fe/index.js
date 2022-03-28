@@ -4,7 +4,10 @@ import socketIOClient from "socket.io-client";
 import info from "../info";
 
 const socket = socketIOClient(info.home.host);
-socket.on("reboot", _=>setTimeout(_=>location.reload(), 100));
+socket.on("system", msg=>{
+    if (msg === "refresh") { setTimeout(_=>location.reload(), 100); }
+    if (msg === "shutdown") { window.close(); }    
+});
 
 const enumerable = true;
 const be = Object.defineProperties({}, {
