@@ -2,9 +2,10 @@
   "name": "@randajan/simple-app",
   "version": "1.0.1",
   "description": "Supersimple start for developing full stack (express + frontend) app with node.js",
-  "repository": "randajan/simple-app",
+  "repository": "randajan/simple-lib",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "license": "MIT",
   "scripts": {
     "build": "node build.js",

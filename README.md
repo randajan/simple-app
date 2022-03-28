@@ -30,7 +30,7 @@ sapp({
   srcdir:"src",                         //directory of source code
   distdir:"dist",                       //directory of build
   fedir:"frontend",                     //subdirectory of frontend
-  bedir:"backend"                       //subdirectory of backend
+  bedir:"backend",                      //subdirectory of backend
   define:{},                            //variables accessible at both FE and BE through global variable "__sapp"
   bedefine:{},                          //variables accessible only at BE through global variable "__sapp"
   fedefine:{},                          //variables accessible only at FE through global variable "__sapp"
