@@ -37,33 +37,21 @@ const ensureFile = async (path, template)=>{
   await fs.outputFile(path, template);
 }
 
-export default async (options={})=>{
-  let {
-    dev,
-    port,
-    home,
-    srcdir,
-    distdir,
-    define,
-    fe,
-    be
-  } = options;
-
-  dev = dev || false;
-  port = port || 3000;
-  home = new URL(home || `http://localhost:${port}`);
+export default async (isProd=false, o={})=>{
+  const port = o.port || 3000;
+  const home = new URL(o.home || `http://localhost:${port}`);
   home.toJSON = _=>Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p=>[p, home[p]]));
-  define = (define || {});
-  srcdir = srcdir || "src";
-  distdir = distdir || "dist";
+  const info = (o.info || {});
+  const srcdir = o.srcdir || "src";
+  const distdir = o.distdir || "dist";
 
-  fe = fe || {};
-  be = be || {};
+  const fe = o.fe || {};
+  const be = o.be || {};
   fe.dir = fe.dir || "frontend";
   be.dir = be.dir || "backend";
   
   for (const xe of [fe, be]) {
-    xe.define = xe.define || {};
+    xe.info = xe.info || {};
     xe.plugins = xe.plugins || [];
     xe.src = srcdir+"/"+xe.dir;
     xe.dist = distdir+"/"+xe.dir;
@@ -85,7 +73,7 @@ export default async (options={})=>{
 
   const uni = {
     color:true,
-    minify: !dev,
+    minify: isProd,
     bundle: true,
     sourcemap: true,
     logLevel: 'error',
@@ -100,7 +88,7 @@ export default async (options={})=>{
       plugins:[...be.plugins, nodeExternalsPlugin({ allowList:["@randajan/simple-app/backend"]})],
       external:[...builtinModules, "express", "socket.io"],
       format:'esm',
-      define:{__sapp:JSON.stringify({ ...define, ...be.define, dev, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
+      define:{__sapp_info:JSON.stringify({ ...info, ...be.info, isProd, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
       ...uni
     }),
     build({
@@ -108,17 +96,18 @@ export default async (options={})=>{
       outdir: fe.dist,
       format:"iife",
       plugins:fe.plugins,
-      define:{__sapp:JSON.stringify({ ...define, ...fe.define, dev, name, version, author, env, home })},
+      external:builtinModules,
+      define:{__sapp_info:JSON.stringify({ ...info, ...fe.info, isProd, name, version, author, env, home })},
       ...uni
     })
   ]);
 
   const rebootBE = async _=>{
-    if (bed.current) {
+    if (be.current) {
       await bed.rebuild();
-      bed.current.http.close();
+      be.current.http.close();
     }
-    bed.current = (await rootImport(import.meta, be.dist+"/index.js?update="+Date.now())).default;
+    be.current = (await rootImport(import.meta, be.dist+"/index.js?update="+Date.now())).default;
   }
   const rebootFE = async (hard)=>{
     if (hard) { await buildPublic(fe.dist); }
@@ -129,14 +118,14 @@ export default async (options={})=>{
 
   log("\x1b[1m\x1b[33m", `Started at ${home.origin}`);
 
-  if (!dev) { return; }
+  if (isProd) { return; }
 
   const rebootOn = (path, exe, color, msg)=>{
     watch(path, { ignoreInitial:true }).on('all', async _=>{
-      const before = bed.current;
+      const before = be.current;
       try { await exe(); } catch(e) { log("\x1b[1m\x1b[31m", msg, "failed"); console.log(e.stack); return; };
-      before.io.emit("reboot", msg+"d"); 
-      before.http.clients.forEach(c=>c.destroy());
+      before.io.emit("reboot", msg+"d");
+      Object.values(before.fe.clients).forEach(c=>c.destroy());
       log(color, msg+"d");
     });
   }

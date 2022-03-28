@@ -23,26 +23,28 @@ import sapp from "@randajan/simple-app";
 
 //those values are default values
 
-sapp({
-  dev:false,                            //true = start dev server; false = generate minify build and start prod server
-  port:3000,                            //port of server
-  home:`http://localhost:${port}`,      //home url
-  srcdir:"src",                         //directory of source code
-  distdir:"dist",                       //directory of build
-  define:{},                            //variables accessible through global variable "__sapp"
-  be:{                                  //backend options
-    dir:"backend",                      //backend subdirectory
-    entry:"index.js",                   //backend entry file
-    define:{},                          //variables accessible only at backend through global variable "__sapp"
-    plugins:[]                          //backend esbuild plugins
-  },
-  fe:{                                  //frontend options
-    dir:"frontend",                     //frontend subdirectory
-    entry:"index.js",                   //frontend entry file
-    define:{},                          //variables accessible only at frontend through global variable "__sapp"
-    plugins:[]                          //frontend esbuild plugins
+sapp(
+  isProd=true                         //false = start dev server; true = generate minify build and start prod server
+  {
+    port:3000,                        //port of server
+    home:`http://localhost:${port}`,  //home url
+    srcdir:"src",                     //directory of source code
+    distdir:"dist",                   //directory of build
+    info:{},                          //variables accessible via import info from "@randajan/simple-app/info"
+    be:{                              //backend options
+      dir:"backend",                  //backend subdirectory
+      entry:"index.js",               //backend entry file
+      info:{},                        //variables accessible only at backend via import info from "@randajan/simple-app/info"
+      plugins:[]                      //backend esbuild plugins
+    },
+    fe:{                              //frontend options
+      dir:"frontend",                 //frontend subdirectory
+      entry:"index.js",               //frontend entry file
+      info:{},                        //variables accessible only at frontend via import info from "@randajan/simple-app/info"
+      plugins:[]                      //frontend esbuild plugins
+    }
   }
-})
+)
 
 ```
 

@@ -20,24 +20,24 @@ export default _=>({
 </html>
 `,
     arc:`
-export default _=>"hello world \\n"+JSON.stringify(__sapp);
+import info from "@randajan/simple-app/info";
+
+export default _=>"hello world "+JSON.stringify(info);
 `,
     be:`
-import server, { express, app } from "@randajan/simple-app/backend";
-import helloworld from "../arc/index.js";
+import be, { express, app, http, io, listener, fe, info } from "@randajan/simple-app/be";
+import helloworld from "../arc";
 
-const be = await server();
-app.use("/", express.static(__sapp.dir.fe));
+app.use("/", express.static(info.dir.fe));
 
 setTimeout(_=>console.log(helloworld()));
 
 export default be;
 `,
     fe:`
-import socketIOClient from "socket.io-client";
-import helloworld from "../arc/index.js";
+import fe, { be, info } from "@randajan/simple-app/fe";
+import helloworld from "../arc";
 
-socketIOClient(__sapp.home.host).on("reboot", _=>setTimeout(_=>location.reload(), 100));
 document.getElementById("root").innerText = helloworld();
 `
 });

@@ -1,8 +1,8 @@
 import sapp from "./src/index.js";
 
 
-sapp({
-    dev:true,
+sapp(false, {
     distdir:"test/dist",
     srcdir:"test/src",
+    info:{foo:"bar"}
 })

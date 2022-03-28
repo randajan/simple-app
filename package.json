@@ -8,7 +8,9 @@
   "module": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./backend": "./dist/backend/index.js"
+    "./be": "./dist/be/index.js",
+    "./fe": "./dist/fe/index.js",
+    "./info": "./dist/info/index.js"
   },
   "license": "MIT",
   "scripts": {

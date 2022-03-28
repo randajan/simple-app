@@ -13,7 +13,7 @@ await build({
     bundle:true,
     sourcemap:true,
     minify:true,
-    entryPoints: ["src/index.js", "src/backend/index.js"],
+    entryPoints: ["src/index.js", "src/be/index.js", "src/fe/index.js", "src/info/index.js"],
     plugins:[nodeExternalsPlugin()],
     external:builtinModules,
 });
