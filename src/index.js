@@ -100,7 +100,7 @@ export default async (options={})=>{
       plugins:[...be.plugins
       //  , nodeExternalsPlugin({ packagePath:root+"/package.json", allowList:["@randajan/simple-app"]})
       ],
-      external:builtinModules,
+      external:[...builtinModules, "express", "socket.io"],
       format:'esm',
       define:{__sapp:JSON.stringify({ ...define, ...be.define, dev, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
       ...uni
