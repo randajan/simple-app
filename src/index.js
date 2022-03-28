@@ -97,9 +97,7 @@ export default async (options={})=>{
       entryPoints: [be.entry],
       outdir: be.dist,
       splitting: true,
-      plugins:[...be.plugins
-      //  , nodeExternalsPlugin({ packagePath:root+"/package.json", allowList:["@randajan/simple-app"]})
-      ],
+      plugins:[...be.plugins, nodeExternalsPlugin({ allowList:["@randajan/simple-app/backend"]})],
       external:[...builtinModules, "express", "socket.io"],
       format:'esm',
       define:{__sapp:JSON.stringify({ ...define, ...be.define, dev, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},

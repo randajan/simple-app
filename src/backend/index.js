@@ -1,6 +1,8 @@
-import express from "express";
 import { createServer } from "http";
+
+import express from "express";
 import { Server as IO } from "socket.io";
+//!!!REMEBER TO ADD EVERY EXTERNAL IMPORT TO EXTERNALS AT BUILDER!!!
 
 let app, http, io, listener;
 
