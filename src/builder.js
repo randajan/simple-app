@@ -43,11 +43,9 @@ export default async (options={})=>{
     home,
     srcdir,
     distdir,
-    fedir,
-    bedir,
     define,
-    fedefine,
-    bedefine
+    fe,
+    be
   } = options;
 
   dev = dev || false;
@@ -57,34 +55,30 @@ export default async (options={})=>{
   define = (define || {});
   srcdir = srcdir || "src";
   distdir = distdir || "dist";
-  fedir = (fedir || "frontend");
-  bedir = (bedir || "backend");
-  
-  const srcfe = srcdir+"/"+fedir;
-  const srcbe = srcdir+"/"+bedir;
-  const distfe = distdir+"/"+fedir;
-  const distbe = distdir+"/"+bedir;
 
-  const dir = {
-    src:srcdir,
-    dist:distdir,
-    srcfe,
-    srcbe,
-    distfe,
-    distbe
+  fe = fe || {};
+  be = be || {};
+  fe.dir = fe.dir || "frontend";
+  be.dir = be.dir || "backend";
+  
+  for (const xe of [fe, be]) {
+    xe.define = xe.define || {};
+    xe.plugins = xe.plugins || [];
+    xe.src = srcdir+"/"+xe.dir;
+    xe.dist = distdir+"/"+xe.dir;
+    xe.entry = xe.src+"/"+(xe.entry || "index.js");
   }
 
   const buildPublic = async removeDir=>{
     if (removeDir) { await fs.remove(removeDir); }
-    await fs.copy(srcdir+'/public', distfe);
+    await fs.copy(srcdir+'/public', fe.dist);
   };
 
   const tmp = templates();
-
   await ensureFile(srcdir+'/public/index.html', tmp.index);
   await ensureFile(srcdir+"/arc/index.js", tmp.arc);
-  await ensureFile(srcbe+'/index.js', tmp.be);
-  await ensureFile(srcfe+'/index.js', tmp.fe);
+  await ensureFile(be.entry, tmp.be);
+  await ensureFile(fe.entry, tmp.fe);
 
   await buildPublic(distdir);
 
@@ -97,36 +91,40 @@ export default async (options={})=>{
     incremental: true
   }
 
-  const [be, fe] = await Promise.all([
+  const [bed, fed] = await Promise.all([
     build({
-      entryPoints: [srcbe+'/index.js'],
-      outdir: distbe,
+      entryPoints: [be.entry],
+      outdir: be.dist,
       splitting: true,
-      plugins:[nodeExternalsPlugin({allowList:["@randajan/simple-app"]})],
+      plugins:[...be.plugins, nodeExternalsPlugin({
+        packagePath:root+"/package.json",
+        allowList:["@randajan/simple-app"]
+      })],
       external:builtinModules,
       format:'esm',
-      define:{__sapp:JSON.stringify({ ...define, ...(bedefine||{}), dev, port, name, version, author, env, dir})},
+      define:{__sapp:JSON.stringify({ ...define, ...be.define, dev, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
       ...uni
     }),
     build({
-      entryPoints: [srcfe+'/index.js'],
-      outdir: distfe,
+      entryPoints: [fe.entry],
+      outdir: fe.dist,
       format:"iife",
-      define:{__sapp:JSON.stringify({ ...define, ...(fedefine||{}), dev, name, version, author, env, home })},
+      plugins:fe.plugins,
+      define:{__sapp:JSON.stringify({ ...define, ...fe.define, dev, name, version, author, env, home })},
       ...uni
     })
   ]);
 
   const rebootBE = async _=>{
-    if (be.current) {
-      await be.rebuild();
-      be.current.http.close();
+    if (bed.current) {
+      await bed.rebuild();
+      bed.current.http.close();
     }
-    be.current = (await rootImport(import.meta, distbe+"/index.js?update="+Date.now())).default;
+    bed.current = (await rootImport(import.meta, be.dist+"/index.js?update="+Date.now())).default;
   }
   const rebootFE = async (hard)=>{
-    if (hard) { await buildPublic(distfe); }
-    await fe.rebuild();
+    if (hard) { await buildPublic(fe.dist); }
+    await fed.rebuild();
   }
 
   await rebootBE();
@@ -137,7 +135,7 @@ export default async (options={})=>{
 
   const rebootOn = (path, exe, color, msg)=>{
     watch(path, { ignoreInitial:true }).on('all', async _=>{
-      const before = be.current;
+      const before = bed.current;
       try { await exe(); } catch(e) { log("\x1b[1m\x1b[31m", msg, "failed"); console.log(e.stack); return; };
       before.io.emit("reboot", msg+"d"); 
       before.http.clients.forEach(c=>c.destroy());
@@ -145,15 +143,11 @@ export default async (options={})=>{
     });
   }
 
-  rebootOn(srcfe+'/**/*', _=>rebootFE(), "\x1b[1m\x1b[32m", "FE change");
+  rebootOn(fe.src+'/**/*', _=>rebootFE(), "\x1b[1m\x1b[32m", "FE change");
   rebootOn(srcdir+'/public/**/*', _=>rebootFE(true), "\x1b[1m\x1b[35m", "Public change");
   rebootOn(srcdir+'/arc/**/*', _=>Promise.all([ rebootBE(), rebootFE()]), "\x1b[1m\x1b[36m", "Arc change");
-  rebootOn(srcbe+'/**/*', _=>rebootBE(), "\x1b[1m\x1b[34m", "BE change");
+  rebootOn(be.src+'/**/*', _=>rebootBE(), "\x1b[1m\x1b[34m", "BE change");
 
   open(`${home.origin}`);
 
-}
-
-export {
-  root
 }

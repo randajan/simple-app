@@ -29,11 +29,19 @@ sapp({
   home:`http://localhost:${port}`,      //home url
   srcdir:"src",                         //directory of source code
   distdir:"dist",                       //directory of build
-  fedir:"frontend",                     //subdirectory of frontend
-  bedir:"backend",                      //subdirectory of backend
-  define:{},                            //variables accessible at both FE and BE through global variable "__sapp"
-  bedefine:{},                          //variables accessible only at BE through global variable "__sapp"
-  fedefine:{},                          //variables accessible only at FE through global variable "__sapp"
+  define:{},                            //variables accessible through global variable "__sapp"
+  be:{                                  //backend options
+    dir:"backend",                      //backend subdirectory
+    entry:"index.js",                   //backend entry file
+    define:{},                          //variables accessible only at backend through global variable "__sapp"
+    plugins:[]                          //backend esbuild plugins
+  },
+  fe:{                                  //frontend options
+    dir:"frontend",                     //frontend subdirectory
+    entry:"index.js",                   //frontend entry file
+    define:{},                          //variables accessible only at frontend through global variable "__sapp"
+    plugins:[]                          //frontend esbuild plugins
+  }
 })
 
 ```

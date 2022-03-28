@@ -28,7 +28,7 @@ import { server, app } from "@randajan/simple-app";
 import helloworld from "../arc/index.js";
 
 const be = await server();
-app.use("/", express.static(__sapp.dir.distfe));
+app.use("/", express.static(__sapp.dir.fe));
 
 setTimeout(_=>console.log(helloworld()));
 
