@@ -2,7 +2,6 @@ import express from "express";
 import { createServer } from "http";
 import { Server as IO } from "socket.io";
 
-
 let app, http, io, listener;
 
 export default async _=>{
@@ -32,10 +31,11 @@ export default async _=>{
         });
     }
     
-    return { app, http, io, listener }
+    return { express, app, http, io, listener }
 }
 
 export {
+    express,
     app,
     http,
     io,
