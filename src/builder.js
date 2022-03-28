@@ -97,8 +97,8 @@ export default async (options={})=>{
       outdir: be.dist,
       splitting: true,
       plugins:[...be.plugins, nodeExternalsPlugin({
-        packagePath:root+"/package.json",
-        allowList:["@randajan/simple-app"]
+//        packagePath:root+"/package.json",
+//        allowList:["@randajan/simple-app"]
       })],
       external:builtinModules,
       format:'esm',
