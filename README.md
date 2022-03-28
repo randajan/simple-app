@@ -1,17 +1,65 @@
-# esbuild React Typescript Template
+# Simple node.js app
 
-> This is a Typecript template for [esbuild create react app](https://github.com/awran5/esbuild-create-react-app) project.
+[![NPM](https://img.shields.io/npm/v/@randajan/simple-app.svg)](https://www.npmjs.com/package/@randajan/simple-lib) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-## What is inside?
+Goal is to provide supersimple start for developing and deploying full stack app in one package
 
-- [TypeScript](https://www.typescriptlang.org/)
-- [esbuild](https://esbuild.github.io/)
-- [Eslint](https://eslint.org/)
-- [Prettier](https://prettier.io/)
-- [Husky](https://github.com/typicode/husky)
-- [lint-staged](https://github.com/okonet/lint-staged)
-- [live-server](https://github.com/tapio/live-server)
+## Instalation
 
-### License
+```console
+npm install -D @randajan/simple-app;
+```
 
-MIT © [awran5](https://github.com/awran5/)
+or
+
+```console
+yarn add -D @randajan/simple-app;
+```
+
+## Usage
+
+```javascript
+import sapp from "@randajan/simple-app";
+
+//those values are default values
+
+sapp({
+  dev:false,                            //true = start dev server; false = generate minify build and start prod server
+  port:3000,                            //port of server
+  home:`http://localhost:${port}`,      //home url
+  srcdir:"src",                         //directory of source code
+  distdir:"dist",                       //directory of build
+  fedir:"frontend",                     //subdirectory of frontend
+  bedir:"backend"                       //subdirectory of backend
+  define:{},                            //variables accessible at both FE and BE through global variable "__sapp"
+  bedefine:{},                          //variables accessible only at BE through global variable "__sapp"
+  fedefine:{},                          //variables accessible only at FE through global variable "__sapp"
+})
+
+```
+
+After run will be generated necessary file structure.
+
+
+## Requirements
+
+```javascript
+...
+    "app-root-path": "^3.0.0",
+    "chokidar": "^3.5.3",
+    "esbuild": "^0.14.28",
+    "esbuild-node-externals": "^1.4.1",
+    "express": "^4.17.3",
+    "fs-extra": "^10.0.0",
+    "open": "^8.4.0",
+    "socket.io": "^4.4.1",
+    "socket.io-client": "^4.4.1"
+...
+```
+
+
+Happy hacking
+
+## License
+
+MIT © [randajan](https://github.com/randajan)

@@ -1,52 +1,49 @@
 {
-  "name": "app_test",
+  "name": "@randajan/simple-app",
   "version": "1.0.0",
+  "description": "Supersimple start for developing full stack (express + frontend) app with node.js",
+  "repository": "randajan/simple-app",
+  "type": "module",
   "main": "index.js",
-  "author": "Jan Randa",
   "license": "MIT",
   "scripts": {
-    "pre-commit": "lint-staged",
-    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
-    "start:dev": "set NODE_ENV=dev&& node index.js",
-    "start:stage": "set NODE_ENV=stage&& node index.js",
-    "start:prod": "set NODE_ENV=prod&& node index.js"
+    "build": "node build.js",
+    "test": "node test.js"
   },
   "dependencies": {
+    "app-root-path": "^3.0.0",
+    "chokidar": "^3.5.3",
+    "esbuild": "^0.14.28",
+    "esbuild-node-externals": "^1.4.1",
     "express": "^4.17.3",
     "fs-extra": "^10.0.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "open": "^8.4.0",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1"
   },
-  "devDependencies": {
-    "@types/live-server": "^1.2.1",
-    "@types/node": "^16.9.1",
-    "@types/react": "^17.0.20",
-    "@types/react-dom": "^17.0.9",
-    "@typescript-eslint/eslint-plugin": "^4.31.0",
-    "@typescript-eslint/parser": "^4.31.0",
-    "chokidar": "^3.5.2",
-    "esbuild": "^0.12.26",
-    "eslint": "^7.32.0",
-    "eslint-config-airbnb": "^18.2.1",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-react": "^7.25.1",
-    "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^7.0.2",
-    "lint-staged": "^11.1.2",
-    "prettier": "^2.4.0",
-    "typescript": "^4.4.3"
+  "devDependencies": {},
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "esbuild",
+    "web",
+    "boilerplate",
+    "simple",
+    "dev",
+    "express",
+    "chokidar",
+    "react",
+    "typescript"
+  ],
+  "homepage": "https://github.com/randajan/simple-app",
+  "bugs": {
+    "url": "https://github.com/randajan/simple-app/issues"
   },
-  "lint-staged": {
-    "*.+(ts|tsx)": "eslint --fix",
-    "*.+(json|css|md)": "prettier --write"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+  "author": {
+    "name": "Jan Randa",
+    "email": "jnranda@gmail.com",
+    "url": "https://www.linkedin.com/in/randajan/"
   }
 }
