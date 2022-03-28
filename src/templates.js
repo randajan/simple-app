@@ -24,7 +24,7 @@ export default _=>"hello world \\n"+JSON.stringify(__sapp);
 `,
     be:`
 import express from "express";
-import { server, app } from "@randajan/simple-web";
+import { server, app } from "@randajan/simple-app";
 import helloworld from "../arc/index.js";
 
 const be = await server();

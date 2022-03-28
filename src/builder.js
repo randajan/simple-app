@@ -102,7 +102,7 @@ export default async (options={})=>{
       entryPoints: [srcbe+'/index.js'],
       outdir: distbe,
       splitting: true,
-      plugins:[nodeExternalsPlugin()],
+      plugins:[nodeExternalsPlugin({allowList:["@randajan/simple-app"]})],
       external:builtinModules,
       format:'esm',
       define:{__sapp:JSON.stringify({ ...define, ...(bedefine||{}), dev, port, name, version, author, env, dir})},
