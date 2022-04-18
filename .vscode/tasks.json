@@ -26,15 +26,15 @@
         {
             "label": "GIT commit",
             "type": "shell",
-            "command": "git add .; git commit -m '${input:commit}'; git push -u origin main"
+            "command": "git add .; git commit -m '${input:commit}'; git push -u origin main",
+            "dependsOn": [
+                "yarn build"
+            ]
         },
         {
-            "type": "npm",
-            "script": "build",
-            "group": "build",
-            "problemMatcher": [],
-            "label": "npm: build",
-            "detail": "node ./build.js"
+            "label": "yarn build",
+            "type": "shell",
+            "command": "yarn build",
         }
     ],
     "inputs": [
