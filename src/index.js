@@ -43,6 +43,7 @@ export default async (isProd=false, o={})=>{
   for (const xe of [fe, be]) {
     xe.info = xe.info || {};
     xe.plugins = xe.plugins || [];
+    xe.loader = xe.loader || {};
     xe.src = srcdir+"/"+xe.dir;
     xe.dist = distdir+"/"+xe.dir;
     xe.entries = (xe.entries || ["index.js"]).map(e=>xe.src+"/"+e);
