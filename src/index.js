@@ -84,6 +84,7 @@ export default async (isProd=false, o={})=>{
       external:[...builtinModules, "express", "socket.io"],
       format:'esm',
       define:{__sapp_info:JSON.stringify({ ...info, ...be.info, isProd, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
+      loader:be.loader,
       ...uni
     }),
     build({
@@ -93,6 +94,7 @@ export default async (isProd=false, o={})=>{
       plugins:fe.plugins,
       external:builtinModules,
       define:{__sapp_info:JSON.stringify({ ...info, ...fe.info, isProd, name, version, author, env, home })},
+      loader:fe.loader,
       ...uni
     })
   ]);
