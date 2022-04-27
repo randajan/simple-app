@@ -31,6 +31,7 @@ sapp(
     srcdir:"src",                     //directory of source code
     distdir:"dist",                   //directory of build
     info:{},                          //variables accessible via import info from "@randajan/simple-app/info"
+    injects:["index.html"],           //dist/frontend files where info variables will be injected between brackets {{name}}
     be:{                              //backend options
       dir:"backend",                  //backend subdirectory
       entries:["index.js"],           //backend entry files

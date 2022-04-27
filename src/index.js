@@ -7,6 +7,8 @@ import { builtinModules } from "module";
 import approot from "app-root-path";
 import { nodeExternalsPlugin } from "esbuild-node-externals";
 
+import { injectString, injectFile } from "./inject.js";
+
 import templates from "./templates.js";
 
 const { NODE_ENV, npm_package_version, npm_package_name, npm_package_author_name } = process.env;
@@ -17,7 +19,7 @@ const version = npm_package_version;
 const author = npm_package_author_name;
 const env = NODE_ENV;
 
-const log = (color, ...msgs)=>console.log(
+export const log = (color, ...msgs)=>console.log(
     color,
     [
         (env ? [name, version, env] : [name, version]).join(" "),
@@ -31,9 +33,10 @@ export default async (isProd=false, o={})=>{
   const port = o.port || 3000;
   const home = new URL(o.home || `http://localhost:${port}`);
   home.toJSON = _=>Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p=>[p, home[p]]));
-  const info = (o.info || {});
+  const info = {...(o.info ? o.info : {}), isProd, name, version, author, env, home};
   const srcdir = o.srcdir || "src";
   const distdir = o.distdir || "dist";
+  const injects = o.injects || ["index.html"];
 
   const fe = o.fe || {};
   const be = o.be || {};
@@ -52,6 +55,7 @@ export default async (isProd=false, o={})=>{
   const buildPublic = async removeDir=>{
     if (removeDir) { await fs.remove(removeDir); }
     await fs.copy(srcdir+'/public', fe.dist);
+    await Promise.all(injects.map(file=>injectFile(fe.dist+"/"+file, info)));
   };
 
   if (!fs.existsSync(srcdir)) {
@@ -83,7 +87,7 @@ export default async (isProd=false, o={})=>{
       plugins:[...be.plugins, nodeExternalsPlugin({ allowList:["@randajan/simple-app/info", "@randajan/simple-app/be"]})],
       external:[...builtinModules, "express", "socket.io"],
       format:'esm',
-      define:{__sapp_info:JSON.stringify({ ...info, ...be.info, isProd, name, version, author, env, home, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
+      define:{__sapp_info:JSON.stringify({ ...be.info, ...info, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
       loader:be.loader,
       ...uni
     }),
@@ -93,7 +97,7 @@ export default async (isProd=false, o={})=>{
       format:"iife",
       plugins:fe.plugins,
       external:builtinModules,
-      define:{__sapp_info:JSON.stringify({ ...info, ...fe.info, isProd, name, version, author, env, home })},
+      define:{__sapp_info:JSON.stringify({ ...fe.info, ...info })},
       loader:fe.loader,
       ...uni
     })
