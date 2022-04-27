@@ -7,7 +7,7 @@ import { builtinModules } from "module";
 import approot from "app-root-path";
 import { nodeExternalsPlugin } from "esbuild-node-externals";
 
-import { injectString, injectFile } from "./inject.js";
+import { injectFile } from "./inject.js";
 
 import templates from "./templates.js";
 
@@ -17,12 +17,12 @@ const root = approot.path;
 const name = npm_package_name;
 const version = npm_package_version;
 const author = npm_package_author_name;
-const env = NODE_ENV;
+const stage = NODE_ENV;
 
 export const log = (color, ...msgs)=>console.log(
     color,
     [
-        (env ? [name, version, env] : [name, version]).join(" "),
+        (stage ? [name, version, stage] : [name, version]).join(" "),
         (new Date()).toLocaleTimeString("cs-CZ"),
         msgs.join(" "),
     ].join(" | "),
@@ -31,7 +31,7 @@ export const log = (color, ...msgs)=>console.log(
 
 export default async (isProd=false, o={})=>{
   const port = o.port || 3000;
-  const info = {...(o.info ? o.info : {}), isProd, name, version, author, env};
+  const info = {...(o.info ? o.info : {}), isProd, name, version, author, stage};
   const home = info.home = new URL(info.home || `http://localhost:${port}`);
   home.toJSON = _=>Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p=>[p, home[p]]));
   const srcdir = o.srcdir || "src";
