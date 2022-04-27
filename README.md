@@ -24,25 +24,26 @@ import sapp from "@randajan/simple-app";
 //those values are default values
 
 sapp(
-  isProd=true                         //false = start dev server; true = generate minify build and start prod server
+  isProd=true                           //false = start dev server; true = generate minify build and start prod server
   {
-    port:3000,                        //port of server
-    home:`http://localhost:${port}`,  //home url
-    srcdir:"src",                     //directory of source code
-    distdir:"dist",                   //directory of build
-    info:{},                          //variables accessible via import info from "@randajan/simple-app/info"
-    injects:["index.html"],           //dist/frontend files where info variables will be injected between brackets {{name}}
-    be:{                              //backend options
-      dir:"backend",                  //backend subdirectory
-      entries:["index.js"],           //backend entry files
-      info:{},                        //variables accessible only at backend via import info from "@randajan/simple-app/info"
-      plugins:[]                      //backend esbuild plugins
+    port:3000,                          //port of server
+    srcdir:"src",                       //directory of source code
+    distdir:"dist",                     //directory of build
+    info:{
+      home:`http://localhost:${port}`   //home url
+    },                                  //variables accessible via import info from "@randajan/simple-app/info"
+    injects:["index.html"],             //dist/frontend files where info variables will be injected between brackets {{name}}
+    be:{                                //backend options
+      dir:"backend",                    //backend subdirectory
+      entries:["index.js"],             //backend entry files
+      info:{},                          //variables accessible only at backend via import info from "@randajan/simple-app/info"
+      plugins:[]                        //backend esbuild plugins
     },
-    fe:{                              //frontend options
-      dir:"frontend",                 //frontend subdirectory
-      entries:["index.js"],           //frontend entry files
-      info:{},                        //variables accessible only at frontend via import info from "@randajan/simple-app/info"
-      plugins:[]                      //frontend esbuild plugins
+    fe:{                                //frontend options
+      dir:"frontend",                   //frontend subdirectory
+      entries:["index.js"],             //frontend entry files
+      info:{},                          //variables accessible only at frontend via import info from "@randajan/simple-app/info"
+      plugins:[]                        //frontend esbuild plugins
     }
   }
 )

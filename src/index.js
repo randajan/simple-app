@@ -31,9 +31,9 @@ export const log = (color, ...msgs)=>console.log(
 
 export default async (isProd=false, o={})=>{
   const port = o.port || 3000;
-  const home = new URL(o.home || `http://localhost:${port}`);
+  const info = {...(o.info ? o.info : {}), isProd, name, version, author, env};
+  const home = info.home = new URL(info.home || `http://localhost:${port}`);
   home.toJSON = _=>Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p=>[p, home[p]]));
-  const info = {...(o.info ? o.info : {}), isProd, name, version, author, env, home};
   const srcdir = o.srcdir || "src";
   const distdir = o.distdir || "dist";
   const injects = o.injects || ["index.html"];
