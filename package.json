@@ -1,6 +1,6 @@
 {
   "name": "@randajan/simple-app",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "Supersimple start for developing full stack (express + frontend) app with node.js",
   "repository": "randajan/simple-lib",
   "type": "module",
