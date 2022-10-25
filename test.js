@@ -1,4 +1,4 @@
-import sapp from "./dist/index.js";
+import sapp, { argv } from "./dist/index.js";
 
 
 sapp(false, {

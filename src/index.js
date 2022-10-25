@@ -13,16 +13,23 @@ import templates from "./templates.js";
 
 const { NODE_ENV, npm_package_version, npm_package_name, npm_package_author_name } = process.env;
 
+export const argv = {};
+for ( const arg of process.argv ) {
+  const pair = String(arg).split("=");
+  if (pair.length === 2) { Object.defineProperty(argv, pair[0], {value:pair[1], enumerable:true}); }
+}
+
 const root = approot.path;
 const name = npm_package_name;
 const version = npm_package_version;
 const author = npm_package_author_name;
-const stage = NODE_ENV;
+const env = argv.env || NODE_ENV;
+
 
 export const log = (color, ...msgs)=>console.log(
     color,
     [
-        (stage ? [name, version, stage] : [name, version]).join(" "),
+        (env ? [name, version, env] : [name, version]).join(" "),
         (new Date()).toLocaleTimeString("cs-CZ"),
         msgs.join(" "),
     ].join(" | "),
@@ -30,8 +37,8 @@ export const log = (color, ...msgs)=>console.log(
 );
 
 export default async (isProd=false, o={})=>{
-  const port = o.port || 3000;
-  const info = {...(o.info ? o.info : {}), isProd, name, version, author, stage};
+  const port = o.port || argv.port || 3000;
+  const info = {...(o.info ? o.info : {}), isProd, name, version, author, env};
   const home = info.home = new URL(info.home || `http://localhost:${port}`);
   home.toJSON = _=>Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p=>[p, home[p]]));
   const srcdir = o.srcdir || "src";
