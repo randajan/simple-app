@@ -125,7 +125,7 @@ export default async (isProd=false, o={})=>{
   await rebootBE();
 
 
-  ["SIGTERM", "SIGINT", "SIGQUIT", "SIGKILL"].forEach(signal=>{
+  ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal=>{
     process.on(signal, _=>{
       be.current.on("exit", _=>process.exit(0));
       be.current.postMessage("shutdown");
