@@ -26,7 +26,7 @@
         {
             "label": "GIT commit",
             "type": "shell",
-            "command": "git add .; git commit -m '${input:commit}'; git push -u origin main",
+            "command": "git add .; git commit -m '${input:commit}'; git push origin main",
             "dependsOn": [
                 "yarn build"
             ]

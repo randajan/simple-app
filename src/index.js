@@ -124,10 +124,13 @@ export default async (isProd=false, o={})=>{
 
   await rebootBE();
 
-  process.on('SIGINT', _=>{
-    be.current.on("exit", _=>process.exit(0));
-    be.current.postMessage("shutdown");
-  });
+
+  ["SIGTERM", "SIGINT", "SIGQUIT", "SIGKILL"].forEach(signal=>{
+    process.on(signal, _=>{
+      be.current.on("exit", _=>process.exit(0));
+      be.current.postMessage("shutdown");
+    });
+  })
 
   log("\x1b[1m\x1b[33m", `Started at ${home.origin}`);
 
