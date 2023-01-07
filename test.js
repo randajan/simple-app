@@ -5,5 +5,5 @@ sapp(true, {
     port:4002,
     distdir:"test/dist",
     srcdir:"test/src",
-    info:{foo:"bar"},
+    info:{foo:"bar", test:["array"]},
 })
