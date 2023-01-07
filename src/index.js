@@ -11,7 +11,7 @@ import { injectFile } from "./inject.js";
 
 import templates from "./templates.js";
 
-const { NODE_ENV, npm_package_version, npm_package_name, npm_package_author_name } = process.env;
+const { NODE_ENV, npm_package_version, npm_package_name, npm_package_author_name, npm_package_description } = process.env;
 
 export const argv = {};
 for ( const arg of process.argv ) {
@@ -21,6 +21,7 @@ for ( const arg of process.argv ) {
 
 const root = approot.path;
 const name = npm_package_name;
+const description = npm_package_description;
 const version = npm_package_version;
 const author = npm_package_author_name;
 const env = argv.env || NODE_ENV;
@@ -38,7 +39,7 @@ export const log = (color, ...msgs)=>console.log(
 
 export default async (isProd=false, o={})=>{
   const port = o.port || argv.port || 3000;
-  const info = {...(o.info ? o.info : {}), isProd, name, version, author, env};
+  const info = {...(o.info ? o.info : {}), isProd, name, description, version, author, env};
   const home = info.home = new URL(info.home || `http://localhost:${port}`);
   home.toJSON = _=>Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p=>[p, home[p]]));
   const srcdir = o.srcdir || "src";
