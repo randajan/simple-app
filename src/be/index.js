@@ -45,7 +45,7 @@ let state = 1;
 parentPort.on("message", msg=>{
     if (msg==="stop") { http.close(); state = 0; setTimeout(_=>_, 60000); }
     if (msg==="shutdown") { process.exit(0); }
-    if (msg==="refresh") {
+    if (msg.startsWith("refresh")) {
         if (state) { emit(msg); cleanUp(); }
         else { process.exit(0); }
     }

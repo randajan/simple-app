@@ -29,6 +29,7 @@ sapp(
     port:3000,                          //port of server
     srcdir:"src",                       //directory of source code
     distdir:"dist",                     //directory of build
+    rebuildBuffer:100,                  //delay between src changed and rebuild happend
     info:{
       home:`http://localhost:${port}`   //home url
     },                                  //variables accessible via import info from "@randajan/simple-app/info"

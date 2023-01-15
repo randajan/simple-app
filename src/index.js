@@ -45,6 +45,7 @@ export default async (isProd=false, o={})=>{
   const srcdir = o.srcdir || "src";
   const distdir = o.distdir || "dist";
   const injects = o.injects || ["index.html"];
+  const rebuildBuffer = Math.max(0, Number(o.rebuildBuffer) || 100);
 
   const fe = o.fe || {};
   const be = o.be || {};
@@ -118,8 +119,8 @@ export default async (isProd=false, o={})=>{
     }
     be.current = new Worker((root+"/"+be.dist+"/index.js").replaceAll("\\", "/"));
   }
-  const rebootFE = async (hard)=>{
-    if (hard) { await buildPublic(fe.dist); }
+  const rebootFE = async (rebuildPublic=false)=>{
+    if (rebuildPublic) { await buildPublic(fe.dist); }
     await fed.rebuild();
   }
 
@@ -133,23 +134,31 @@ export default async (isProd=false, o={})=>{
     });
   })
 
-  log("\x1b[1m\x1b[33m", `Started at ${home.origin}`);
+  log("\x1b[47m\x1b[30m", `Started at ${home.origin}`);
 
   if (isProd) { return; }
 
-  const rebootOn = (path, exe, color, msg)=>{
-    watch(path, { ignoreInitial:true }).on('all', async _=>{
+  const rebootOn = (name, color, path, exe, ignored)=>{
+    const reboot = async _=>{
       const before = be.current;
+      const msg = name+" change";
       try { await exe(); } catch(e) { log("\x1b[1m\x1b[31m", msg, "failed"); console.log(e.stack); return; };
-      before.postMessage("refresh");
+      before.postMessage("refresh:"+name);
       log(color, msg+"d");
+    }
+
+    let timer;
+    watch(path, { ignoreInitial:true, ignored }).on('all', _=>{
+      clearTimeout(timer);
+      timer = setTimeout(reboot, rebuildBuffer);
     });
   }
 
-  rebootOn(srcdir+'/public/**/*', _=>rebootFE(true), "\x1b[1m\x1b[35m", "Public change");
-  rebootOn(srcdir+'/arc/**/*', _=>Promise.all([ rebootBE(), rebootFE()]), "\x1b[1m\x1b[36m", "Arc change");
-  rebootOn(fe.src+'/**/*', _=>rebootFE(), "\x1b[1m\x1b[32m", "FE change");
-  rebootOn(be.src+'/**/*', _=>rebootBE(), "\x1b[1m\x1b[34m", "BE change");
+  rebootOn("Public", "\x1b[1m\x1b[35m", srcdir+'/public/**/*', _=>rebootFE(true));
+  rebootOn("Arc", "\x1b[1m\x1b[36m", srcdir+'/arc/**/*', _=>Promise.all([rebootBE(), rebootFE()]));
+  rebootOn("CSS", "\x1b[1m\x1b[33m", fe.src+'/**/*', _=>rebootFE(), /!(\.s?css)$/);
+  rebootOn("FE", "\x1b[1m\x1b[32m", fe.src+'/**/*', _=>rebootFE(), /(\.s?css)$/);
+  rebootOn("BE", "\x1b[1m\x1b[34m", be.src+'/**/*', _=>rebootBE());
 
   open(home.origin);
 
