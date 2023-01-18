@@ -148,7 +148,7 @@ export default async (isProd=false, o={})=>{
     }
 
     let timer;
-    watch(path, { ignoreInitial:true, ignored }).on('all', _=>{
+    watch(path, { ignoreInitial:true, ignored }).on('all', (...args)=>{
       clearTimeout(timer);
       timer = setTimeout(reboot, rebuildBuffer);
     });
@@ -156,7 +156,7 @@ export default async (isProd=false, o={})=>{
 
   rebootOn("Public", "\x1b[1m\x1b[35m", srcdir+'/public/**/*', _=>rebootFE(true));
   rebootOn("Arc", "\x1b[1m\x1b[36m", srcdir+'/arc/**/*', _=>Promise.all([rebootBE(), rebootFE()]));
-  rebootOn("CSS", "\x1b[1m\x1b[33m", fe.src+'/**/*', _=>rebootFE(), /!(\.s?css)$/);
+  rebootOn("CSS", "\x1b[1m\x1b[33m", [fe.src+'/**/*.css', fe.src+'/**/*.scss'], _=>rebootFE());
   rebootOn("FE", "\x1b[1m\x1b[32m", fe.src+'/**/*', _=>rebootFE(), /(\.s?css)$/);
   rebootOn("BE", "\x1b[1m\x1b[34m", be.src+'/**/*', _=>rebootBE());
 
