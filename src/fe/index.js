@@ -18,7 +18,7 @@ socket.on("system", msg=>{
 
 const enumerable = true;
 const be = Object.defineProperties({}, {
-    socket:{enumerable, socket:true}
+    socket:{enumerable, value:socket}
 })
 
 export default Object.defineProperties({}, {
