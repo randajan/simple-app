@@ -1,5 +1,5 @@
 
-export default _=>({
+export default {
     index:`
 <!DOCTYPE html>
 <html lang="en">
@@ -25,7 +25,7 @@ import info from "@randajan/simple-app/info";
 export default _=>"hello world "+JSON.stringify(info);
 `,
     be:`
-import be, { express, app, http, io, listener, fe, info } from "@randajan/simple-app/be";
+import be, { express, app, http, io, listener, fe, info } from "@randajan/simple-app/express";
 import helloworld from "../arc";
 
 app.use("/", express.static(info.dir.fe));
@@ -38,4 +38,4 @@ import helloworld from "../arc";
 
 document.getElementById("root").innerText = helloworld();
 `
-});
+};

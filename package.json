@@ -8,7 +8,8 @@
   "module": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./be": "./dist/be/index.js",
+    "./express": "./dist/be/express.js",
+    "./koa": "./dist/be/koa.js",
     "./fe": "./dist/fe/index.js",
     "./info": "./dist/info/index.js"
   },
@@ -20,16 +21,20 @@
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
+    "chalk": "^5.2.0",
     "chokidar": "^3.5.3",
     "esbuild": "^0.14.28",
-    "esbuild-node-externals": "^1.4.1",
-    "express": "^4.17.3",
+    "esbuild-node-externals": "^1.7.0",
     "fs-extra": "^10.0.0",
     "open": "^8.4.0",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "express": "^4.18.2",
+    "koa": "^2.14.2",
+    "koa-static": "^5.0.0"
+  },
   "files": [
     "dist",
     "README.md",

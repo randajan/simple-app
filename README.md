@@ -30,21 +30,30 @@ sapp(
     srcdir:"src",                       //directory of source code
     distdir:"dist",                     //directory of build
     rebuildBuffer:100,                  //delay between src changed and rebuild happend
+    external:[],                        //global esbuild external libraries
+    plugins:[],                         //global esbuild plugins
+    loader:{},                          //global esbuild loader
     info:{
       home:`http://localhost:${port}`   //home url
     },                                  //variables accessible via import info from "@randajan/simple-app/info"
     injects:["index.html"],             //dist/frontend files where info variables will be injected between brackets {{name}}
     be:{                                //backend options
       dir:"backend",                    //backend subdirectory
+      minify:isProd,                    //backend minify - true = generate minify build; if null then isProd 
       entries:["index.js"],             //backend entry files
+      external:[],                      //backend esbuild external libraries
+      plugins:[],                       //backend esbuild plugins
+      loader:{},                        //backend esbuild loader
       info:{},                          //variables accessible only at backend via import info from "@randajan/simple-app/info"
-      plugins:[]                        //backend esbuild plugins
     },
     fe:{                                //frontend options
       dir:"frontend",                   //frontend subdirectory
+      minify:isProd,                    //frontend minify - true = generate minify build; if null then isProd 
       entries:["index.js"],             //frontend entry files
+      external:[],                      //frontend esbuild external libraries
+      plugins:[],                       //frontend esbuild plugins
+      loader:{},                        //frontend esbuild loader
       info:{},                          //variables accessible only at frontend via import info from "@randajan/simple-app/info"
-      plugins:[]                        //frontend esbuild plugins
     }
   }
 )
@@ -59,9 +68,10 @@ After run will be generated necessary file structure.
 ```javascript
 ...
     "app-root-path": "^3.0.0",
+    "chalk": "^5.2.0",
     "chokidar": "^3.5.3",
     "esbuild": "^0.14.28",
-    "esbuild-node-externals": "^1.4.1",
+    "esbuild-node-externals": "^1.7.0",
     "express": "^4.17.3",
     "fs-extra": "^10.0.0",
     "open": "^8.4.0",

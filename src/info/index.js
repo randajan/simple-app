@@ -1,3 +1,4 @@
+import { logger } from "../logger";
 
 
 const enumerable = true;
@@ -16,4 +17,8 @@ const lockObject = o=>{
     return r;
 }
 
-export default lockObject(__sapp_info);
+export const info = lockObject(__sapp_info);
+export const log = logger(info.name, info.version, info.env);
+
+export default info;
+

@@ -1,131 +1,51 @@
 import { Worker } from "worker_threads";
 import { watch } from "chokidar";
-import { build } from 'esbuild';
 import open from "open";
 import fs from "fs-extra";
-import { builtinModules } from "module";
-import approot from "app-root-path";
-import { nodeExternalsPlugin } from "esbuild-node-externals";
 
 import { injectFile } from "./inject.js";
 
 import templates from "./templates.js";
+import { argv, parseConfig } from "./config.js";
 
-const { NODE_ENV, npm_package_version, npm_package_name, npm_package_author_name, npm_package_description } = process.env;
-
-export const argv = {};
-for ( const arg of process.argv ) {
-  const pair = String(arg).split("=");
-  if (pair.length === 2) { Object.defineProperty(argv, pair[0], {value:pair[1], enumerable:true}); }
+export {
+  argv
 }
 
-const root = approot.path;
-const name = npm_package_name;
-const description = npm_package_description;
-const version = npm_package_version;
-const author = npm_package_author_name;
-const env = argv.env || NODE_ENV;
-
-
-export const log = (color, ...msgs)=>console.log(
-    color,
-    [
-        (env ? [name, version, env] : [name, version]).join(" "),
-        (new Date()).toLocaleTimeString("cs-CZ"),
-        msgs.join(" "),
-    ].join(" | "),
-    "\x1b[0m"
-);
-
-export default async (isProd=false, o={})=>{
-  const port = o.port || argv.port || 3000;
-  const info = {...(o.info ? o.info : {}), isProd, name, description, version, author, env};
-  const home = info.home = new URL(info.home || `http://localhost:${port}`);
-  home.toJSON = _=>Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p=>[p, home[p]]));
-  const srcdir = o.srcdir || "src";
-  const distdir = o.distdir || "dist";
-  const injects = o.injects || ["index.html"];
-  const rebuildBuffer = Math.max(0, Number(o.rebuildBuffer) || 100);
-
-  const fe = o.fe || {};
-  const be = o.be || {};
-  fe.dir = fe.dir || "frontend";
-  be.dir = be.dir || "backend";
-  
-  for (const xe of [fe, be]) {
-    xe.info = xe.info || {};
-    xe.plugins = xe.plugins || [];
-    xe.loader = xe.loader || {};
-    xe.src = srcdir+"/"+xe.dir;
-    xe.dist = distdir+"/"+xe.dir;
-    xe.entries = (xe.entries || ["index.js"]).map(e=>xe.src+"/"+e);
-  }
+export default async (isProd=false, config={})=>{
+  const { port, srcdir, distdir, fe, be, injects, rebuildBuffer, log } = parseConfig(isProd, config);
+  const logbold = log.bold;
+  const logred = logbold.red;
 
   const buildPublic = async removeDir=>{
     if (removeDir) { await fs.remove(removeDir); }
-    await fs.copy(srcdir+'/public', fe.dist);
-    await Promise.all(injects.map(file=>injectFile(fe.dist+"/"+file, info)));
+    await fs.copy(srcdir+'/public', fe.distdir);
+    await Promise.all(injects.map(file=>injectFile(fe.distdir+"/"+file, fe.info)));
   };
 
   if (!fs.existsSync(srcdir)) {
-    const tmp = templates();
     await Promise.all([
-      fs.outputFile(srcdir+'/public/index.html', tmp.index),
-      fs.outputFile(srcdir+"/arc/index.js", tmp.arc),
-      fs.outputFile(be.src+"/index.js", tmp.be),
-      fs.outputFile(fe.src+"/index.js", tmp.fe),
+      fs.outputFile(srcdir+'/public/index.html', templates.index),
+      fs.outputFile(srcdir+"/arc/index.js", templates.arc),
+      fs.outputFile(be.srcdir+"/index.js", templates.be),
+      fs.outputFile(fe.srcdir+"/index.js", templates.fe),
     ]);
   }
 
   await buildPublic(distdir);
-
-  const uni = {
-    color:true,
-    minify: isProd,
-    bundle: true,
-    sourcemap: true,
-    logLevel: 'error',
-    incremental: true
-  }
-
-  const [bed, fed] = await Promise.all([
-    build({
-      entryPoints: be.entries,
-      outdir: be.dist,
-      splitting: true,
-      plugins:[...be.plugins, nodeExternalsPlugin({ allowList:["@randajan/simple-app/info", "@randajan/simple-app/be"]})],
-      external:[...builtinModules, "express", "socket.io"],
-      format:'esm',
-      define:{__sapp_info:JSON.stringify({ ...be.info, ...info, port, dir:{ root, dist:distdir, fe:fe.dist, be:be.dist }})},
-      loader:be.loader,
-      ...uni
-    }),
-    build({
-      entryPoints: fe.entries,
-      outdir: fe.dist,
-      format:"iife",
-      plugins:fe.plugins,
-      external:builtinModules,
-      define:{__sapp_info:JSON.stringify({ ...fe.info, ...info })},
-      loader:fe.loader,
-      ...uni
-    })
-  ]);
+  await be.rebuild();
+  await fe.rebuild();
 
   const rebootBE = async _=>{
-    if (be.current) {
-      await bed.rebuild();
-      be.current.postMessage("stop");
-    }
-    be.current = new Worker((root+"/"+be.dist+"/index.js").replaceAll("\\", "/"));
+    await be.rebuild();
+    if (be.current) { be.current.postMessage("stop"); }
+    be.current = new Worker(("./"+be.distdir+"/index.js").replaceAll("\\", "/"));
   }
+
   const rebootFE = async (rebuildPublic=false)=>{
     if (rebuildPublic) { await buildPublic(fe.dist); }
-    await fed.rebuild();
+    await fe.rebuild();
   }
-
-  await rebootBE();
-
 
   ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal=>{
     process.on(signal, _=>{
@@ -134,17 +54,17 @@ export default async (isProd=false, o={})=>{
     });
   })
 
-  log("\x1b[47m\x1b[30m", `Started at ${home.origin}`);
+  logbold.inverse(`Started at ${be.info.home.origin}`);
 
   if (isProd) { return; }
 
-  const rebootOn = (name, color, path, exe, ignored)=>{
+  const rebootOn = (name, customLog, path, exe, ignored)=>{
     const reboot = async _=>{
-      const before = be.current;
       const msg = name+" change";
-      try { await exe(); } catch(e) { log("\x1b[1m\x1b[31m", msg, "failed"); console.log(e.stack); return; };
-      before.postMessage("refresh:"+name);
-      log(color, msg+"d");
+      const before = be.current;
+      try { await exe(); } catch(e) { logred(msg, "failed"); log(e.stack); return; };
+      if (before) { before.postMessage("refresh:"+name); }
+      customLog(msg+"d");
     }
 
     let timer;
@@ -154,12 +74,14 @@ export default async (isProd=false, o={})=>{
     });
   }
 
-  rebootOn("Public", "\x1b[1m\x1b[35m", srcdir+'/public/**/*', _=>rebootFE(true));
-  rebootOn("Arc", "\x1b[1m\x1b[36m", srcdir+'/arc/**/*', _=>Promise.all([rebootBE(), rebootFE()]));
-  rebootOn("CSS", "\x1b[1m\x1b[33m", [fe.src+'/**/*.css', fe.src+'/**/*.scss'], _=>rebootFE());
-  rebootOn("FE", "\x1b[1m\x1b[32m", fe.src+'/**/*', _=>rebootFE(), /(\.s?css)$/);
-  rebootOn("BE", "\x1b[1m\x1b[34m", be.src+'/**/*', _=>rebootBE());
+  await rebootBE();
 
-  open(home.origin);
+  rebootOn("Public", logbold.magenta, srcdir+'/public/**/*', _=>rebootFE(true));
+  rebootOn("Arc", logbold.cyan, srcdir+'/arc/**/*', _=>Promise.all([rebootBE(), rebootFE()]));
+  rebootOn("CSS", logbold.yellow, [fe.srcdir+'/**/*.css', fe.srcdir+'/**/*.scss'], _=>rebootFE());
+  rebootOn("FE", logbold.green, fe.srcdir+'/**/*', _=>rebootFE(), /(\.s?css)$/);
+  rebootOn("BE", logbold.blue, be.srcdir+'/**/*', _=>rebootBE());
+
+  open(be.info.home.origin);
 
 }

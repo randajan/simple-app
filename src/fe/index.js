@@ -1,7 +1,7 @@
 
 import socketIOClient from "socket.io-client";
 
-import info from "../info";
+import { info, log } from "../info";
 
 const socket = socketIOClient(info.home.host);
 socket.on("system", msg=>{
@@ -19,14 +19,16 @@ socket.on("system", msg=>{
 const enumerable = true;
 const be = Object.defineProperties({}, {
     socket:{enumerable, value:socket}
-})
+});
 
 export default Object.defineProperties({}, {
     be:{enumerable, value:be},
+    log:{enumerable, value:log},
     info:{enumerable, value:info}
 })
 
 export {
     be,
+    log,
     info
 }

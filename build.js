@@ -12,8 +12,8 @@ await build({
     color:true,
     bundle:true,
     sourcemap:true,
-    minify:true,
-    entryPoints: ["src/index.js", "src/be/index.js", "src/fe/index.js", "src/info/index.js"],
+    minify:false,
+    entryPoints: ["src/index.js", "src/be/express.js", "src/be/koa.js", "src/fe/index.js", "src/info/index.js"],
     plugins:[nodeExternalsPlugin()],
     external:builtinModules,
 });
