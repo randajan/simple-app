@@ -5,12 +5,11 @@ import { createServer as createServerHTTP } from "http";
 import { Server as IO } from "socket.io";
 import { info, log } from "../info";
 
-
 const _servers = [];
 const enumerable = true;
 
 export class Server {
-    constructor(app, portOverride = null) {
+    constructor(requestListener, portOverride = null) {
         const _p = {
             cid: 0,
             listener: null,
@@ -20,7 +19,7 @@ export class Server {
         }
 
         const port = portOverride || info.port;
-        const http = createServerHTTP(app);
+        const http = createServerHTTP(requestListener);
         const io = new IO(http);
 
         http.on("connection", c => {
@@ -38,7 +37,6 @@ export class Server {
             id: { value:_servers.push({ instance:this, private:_p })-1 },
             state: { enumerable, get: _ => _p.state },
             port: { enumerable, value: port },
-            app: { value: app },
             http: { value: http },
             io: { value: io },
             listener: { get:_=>_p.listener },
@@ -55,7 +53,6 @@ export class Server {
 
     async start() {
         const _p = _servers[this.id].private;
-
 
         if ( _p.state !== "stopped" ) { return _p.startProcess; }
         _p.state = "starting";

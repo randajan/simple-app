@@ -1,15 +1,15 @@
-import koa from "koa";
+import Koa from "koa";
 
 import { Server } from "./index";
 
-const server = new Server(koa());
+export const app = new Koa();
 
-Object.defineProperty(server, "koa", { value:koa });
+const server = new Server(app.callback());
+
+Object.defineProperty(server, "app", { value:app });
 
 export default server;
 
-export { koa };
-export const app = server.app;
 export const http = server.http;
 export const io = server.io;
 export const bridge = server.bridge;

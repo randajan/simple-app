@@ -25,7 +25,7 @@ import info from "@randajan/simple-app/info";
 export default _=>"hello world "+JSON.stringify(info);
 `,
     be:`
-import be, { express, app, http, io, listener, fe, info } from "@randajan/simple-app/express";
+import be, { express, app, http, io, bridge, info } from "@randajan/simple-app/be/express";
 import helloworld from "../arc";
 
 app.use("/", express.static(info.dir.fe));
@@ -33,7 +33,7 @@ app.use("/", express.static(info.dir.fe));
 setTimeout(_=>console.log(helloworld()));
 `,
     fe:`
-import fe, { be, info } from "@randajan/simple-app/fe";
+import fe, { bridge, info } from "@randajan/simple-app/fe";
 import helloworld from "../arc";
 
 document.getElementById("root").innerText = helloworld();

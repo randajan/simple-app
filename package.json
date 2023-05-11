@@ -8,8 +8,9 @@
   "module": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./express": "./dist/be/express.js",
-    "./koa": "./dist/be/koa.js",
+    "./be": "./dist/be/index.js",
+    "./be/express": "./dist/be/express.js",
+    "./be/koa": "./dist/be/koa.js",
     "./fe": "./dist/fe/index.js",
     "./info": "./dist/info/index.js"
   },

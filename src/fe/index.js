@@ -17,18 +17,18 @@ socket.on("system", msg=>{
 });
 
 const enumerable = true;
-const be = Object.defineProperties({}, {
+const bridge = Object.defineProperties({}, {
     socket:{enumerable, value:socket}
 });
 
 export default Object.defineProperties({}, {
-    be:{enumerable, value:be},
+    bridge:{enumerable, value:bridge},
     log:{enumerable, value:log},
     info:{enumerable, value:info}
 })
 
 export {
-    be,
+    bridge,
     log,
     info
 }
