@@ -19,7 +19,7 @@ const version = npm_package_version;
 const author = npm_package_author_name;
 const env = argv.env || NODE_ENV;
 
-const _externalsPlugin = nodeExternalsPlugin({ allowList:["info", "fe", "express", "koa"].map(v=>"@randajan/simple-app/"+v)});
+const _externalsPlugin = nodeExternalsPlugin({ allowList:["info", "fe", "be", "be/express", "be/koa"].map(v=>"@randajan/simple-app/"+v)});
 
 const buildFactory = ({entries, distdir, minify, splitting, external, plugins, loader, format, info})=>{
     let _build; //cache esbuild
