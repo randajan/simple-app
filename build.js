@@ -7,7 +7,7 @@ await fs.remove("dist");
 
 await build({
     outdir:"dist",
-    splitting: true,
+    splitting: false,
     format: 'esm',
     color:true,
     bundle:true,
