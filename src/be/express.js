@@ -5,6 +5,8 @@ import { Server } from "./index";
 export const app = express();
 const server = new Server(app);
 
+server.start();
+
 Object.defineProperty(server, "app", { value:app });
 Object.defineProperty(server, "express", { value:express });
 
