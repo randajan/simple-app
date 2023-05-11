@@ -31,11 +31,7 @@
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1"
   },
-  "devDependencies": {
-    "express": "^4.18.2",
-    "koa": "^2.14.2",
-    "koa-static": "^5.0.0"
-  },
+  "devDependencies": {},
   "files": [
     "dist",
     "README.md",
@@ -60,5 +56,10 @@
     "name": "Jan Randa",
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
+  },
+  "peerDependencies": {
+    "express": "^4.18.2",
+    "koa": "^2.14.2",
+    "koa-static": "^5.0.0"
   }
 }
