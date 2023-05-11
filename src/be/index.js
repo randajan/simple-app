@@ -2,97 +2,103 @@ import { parentPort } from "worker_threads";
 
 import { createServer as createServerHTTP } from "http";
 
-import express from "express";
 import { Server as IO } from "socket.io";
 import { info, log } from "../info";
 
 
-
+const _servers = [];
 const enumerable = true;
 
-class Server {
-    constructor(app, portOverride=null) {
-
-        let _cid = 0;
-        const clients = {};
-        const sockets = {};
+export class Server {
+    constructor(app, portOverride = null) {
+        const _p = {
+            cid: 0,
+            listener: null,
+            state:"stopped", //state stopped, starting, started
+            clients:{},
+            sockets:{}
+        }
 
         const port = portOverride || info.port;
         const http = createServerHTTP(app);
         const io = new IO(http);
 
         http.on("connection", c => {
-            c.id = _cid++;
-            clients[c.id] = c;
-            c.on("close", _ => delete clients[c.id]);
+            c.id = _p.cid++;
+            _p.clients[c.id] = c;
+            c.on("close", _ => delete _p.clients[c.id]);
         });
-    
+
         io.on("connection", s => {
-            sockets[s.id] = s;
-            s.on("disconnect", _ => delete sockets[s.id]);
+            _p.sockets[s.id] = s;
+            s.on("disconnect", _ => delete _p.sockets[s.id]);
         });
 
         Object.defineProperties(this, {
-            app:{ enumerable, value:app },
-            port:{ enumerable, value:port },
-            http:{ enumerable, value:http },
-            io:{ enumerable, value:io },
-            clients: { enumerable, get: _ => Object.assign({}, clients) },
-            sockets: { enumerable, get: _ => Object.assign({}, sockets) },
+            id: { value:_servers.push({ instance:this, private:_p })-1 },
+            state: { enumerable, get: _ => _p.state },
+            port: { enumerable, value: port },
+            app: { value: app },
+            http: { value: http },
+            io: { value: io },
+            listener: { get:_=>_p.listener },
+            bridge: {
+                enumerable, value: Object.defineProperties({}, {
+                    clients: { enumerable, get: _ => ({ ..._p.clients }) },
+                    sockets: { enumerable, get: _ => ({ ..._p.sockets }) },
+                })
+            },
+            info: { enumerable, value:info }
         });
 
     }
 
     async start() {
-        return new Promise((res, rej) => {
-            try { const listener = this.http.listen(this.port, _ => res(listener)); }
+        const _p = _servers[this.id].private;
+
+
+        if ( _p.state !== "stopped" ) { return _p.startProcess; }
+        _p.state = "starting";
+        return _p.startProcess = new Promise((res, rej) => {
+            try { const listener = this.http.listen(this.port, _ =>{
+                _p.state = "started";
+                res(_p.listener = listener);
+            }); }
             catch (e) { rej(e); }
         });
     }
 
     async stop() {
-        const { http, sockets, clients } = this;
-        for (const client of clients) { client.destroy(); }
-        for (const socket of sockets) { socket.destroy(); }
-        http.close();
+        const _p = _servers[this.id].private;
+
+        if ( _p.state === "stopped" ) { return this; }
+        if ( _p.state === "starting" ) { await _p.startProcess; }
+        Object.values(_p.clients).forEach(c => c.destroy());
+        this.http.close();
+        return this;
     }
+
+    restart() { return this.stop().start(); }
+
 }
 
-const cleanUp = _ => Object.values(fe.clients).forEach(c => c.destroy());
-
-let state = 1;
+let state = true;
 parentPort.on("message", msg => {
-    if (msg === "stop") { http.close(); state = 0; setTimeout(_ => _, 60000); }
+    if (msg === "stop") {
+        state = false;
+        _servers.forEach(s=>s.instance.stop());
+        setTimeout(_ => _, 60000);
+    }
     if (msg === "shutdown") { process.exit(0); }
     if (msg.startsWith("refresh")) {
-        if (state) { io.emit("system", msg); cleanUp(); }
-        else { process.exit(0); }
+        if (!state) { process.exit(0); } else {
+            _servers.forEach(s=>s.instance.io.emit("system", msg));
+        }
     }
 });
 
 process.on("exit", _ => {
-    io.emit("system", state ? "shutdown" : "refresh");
-    cleanUp();
+    _servers.forEach(s=>s.instance.io.emit("system", state ? "shutdown" : "refresh"));
 })
 
-process.on('uncaughtException', e =>log.red(e.stack));
-
-export default Object.defineProperties({}, {
-    express: { enumerable, value: express },
-    app: { enumerable, value: app },
-    http: { enumerable, value: http },
-    io: { enumerable, value: io },
-    listener: { enumerable, value: listener },
-    fe: { enumerable, value: fe },
-    info: { enumerable, value: info }
-});
-
-export {
-    express,
-    app,
-    http,
-    io,
-    listener,
-    fe,
-    info
-}
+process.on('uncaughtException', e => log.red(e.stack));
