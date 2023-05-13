@@ -1,7 +1,7 @@
 import { Worker } from "worker_threads";
 import { watch } from "chokidar";
-import open from "open";
 import fs from "fs-extra";
+import open from "open";
 
 import { injectFile } from "./inject.js";
 
@@ -29,6 +29,7 @@ export default async (isProd=false, config={})=>{
       fs.outputFile(srcdir+"/arc/index.js", templates.arc),
       fs.outputFile(be.srcdir+"/index.js", templates.be),
       fs.outputFile(fe.srcdir+"/index.js", templates.fe),
+      fs.outputFile(fe.srcdir+'/index.css', templates.css),
     ]);
   }
 
@@ -38,7 +39,6 @@ export default async (isProd=false, config={})=>{
 
   const rebootBE = async _=>{
     await be.rebuild();
-    if (be.current) { be.current.postMessage("stop"); }
     be.current = new Worker(("./"+be.distdir+"/index.js").replaceAll("\\", "/"));
   }
 
@@ -50,7 +50,7 @@ export default async (isProd=false, config={})=>{
   ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal=>{
     process.on(signal, _=>{
       be.current.on("exit", _=>process.exit(0));
-      be.current.postMessage("shutdown");
+      be.current.postMessage("exit");
     });
   })
 
@@ -61,9 +61,10 @@ export default async (isProd=false, config={})=>{
   const rebootOn = (name, customLog, path, exe, ignored)=>{
     const reboot = async _=>{
       const msg = name+" change";
-      const before = be.current;
+      const current = be.current;
+      if (current) { current.postMessage("rebuild:"+name); }
       try { await exe(); } catch(e) { logred(msg, "failed"); log(e.stack); return; };
-      if (before) { before.postMessage("refresh:"+name); }
+      if (current) { current.postMessage("restart:"+name); }
       customLog(msg+"d");
     }
 

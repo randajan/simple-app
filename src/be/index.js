@@ -33,8 +33,31 @@ export class Server {
             s.on("disconnect", _ => delete _p.sockets[s.id]);
         });
 
+        const start = async _=>{
+            if ( _p.state !== "stopped" ) { return _p.startProcess; }
+            _p.state = "starting";
+            return _p.startProcess = new Promise((res, rej) => {
+                try { const listener = http.listen(port, _ =>{
+                    _p.state = "started";
+                    res(_p.listener = listener);
+                }); }
+                catch (e) { rej(e); }
+            });
+        }
+    
+        const stop = async (msg, ...msgs)=>{
+            if ( _p.state === "stopped" ) { return this; }
+            if ( _p.state === "starting" ) { await _p.startProcess; }
+            io.emit("system", msg || "stop", ...msgs);
+            Object.values(_p.clients).forEach(c => c.destroy());
+            http.close();
+            return this;
+        }
+    
+        const restart = () => { return stop("refresh").start(); }
+
         Object.defineProperties(this, {
-            id: { value:_servers.push({ instance:this, private:_p })-1 },
+            id: { value:_servers.push(this)-1 },
             state: { enumerable, get: _ => _p.state },
             port: { enumerable, value: port },
             http: { value: http },
@@ -46,56 +69,26 @@ export class Server {
                     sockets: { enumerable, get: _ => ({ ..._p.sockets }) },
                 })
             },
-            info: { enumerable, value:info }
+            info: { enumerable, value:info },
+            start: { value:start },
+            stop: { value:stop },
+            restart:{ value:restart }
         });
 
     }
-
-    async start() {
-        const _p = _servers[this.id].private;
-
-        if ( _p.state !== "stopped" ) { return _p.startProcess; }
-        _p.state = "starting";
-        return _p.startProcess = new Promise((res, rej) => {
-            try { const listener = this.http.listen(this.port, _ =>{
-                _p.state = "started";
-                res(_p.listener = listener);
-            }); }
-            catch (e) { rej(e); }
-        });
-    }
-
-    async stop() {
-        const _p = _servers[this.id].private;
-
-        if ( _p.state === "stopped" ) { return this; }
-        if ( _p.state === "starting" ) { await _p.startProcess; }
-        Object.values(_p.clients).forEach(c => c.destroy());
-        this.http.close();
-        return this;
-    }
-
-    restart() { return this.stop().start(); }
 
 }
 
 let state = true;
 parentPort.on("message", msg => {
-    if (msg === "stop") {
-        state = false;
-        _servers.forEach(s=>s.instance.stop());
-        setTimeout(_ => _, 60000);
-    }
-    if (msg === "shutdown") { process.exit(0); }
-    if (msg.startsWith("refresh")) {
-        if (!state) { process.exit(0); } else {
-            _servers.forEach(s=>s.instance.io.emit("system", msg));
-        }
-    }
+    const [ action, target ] = msg.split(":");
+    if (action === "exit") { process.exit(0); }
+    else if (action === "restart") { _servers.forEach(s=>s.io.emit("system", "refresh", target)); }
+    else if (action === "rebuild" && (target === "BE" || target === "Arc")) { _servers.forEach(s=>s.stop("refresh")); }
 });
 
 process.on("exit", _ => {
-    _servers.forEach(s=>s.instance.io.emit("system", state ? "shutdown" : "refresh"));
+    if (state) { _servers.forEach(s=>s.stop()); }
 })
 
 process.on('uncaughtException', e => log.red(e.stack));
