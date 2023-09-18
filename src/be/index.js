@@ -83,12 +83,15 @@ let state = true;
 parentPort.on("message", msg => {
     const [ action, target ] = msg.split(":");
     if (action === "exit") { process.exit(0); }
+    else if (action === "rebuild" && (target === "BE" || target === "Arc")) { process.exit(11); }
     else if (action === "restart") { _servers.forEach(s=>s.io.emit("system", "refresh", target)); }
-    else if (action === "rebuild" && (target === "BE" || target === "Arc")) { _servers.forEach(s=>s.stop("refresh")); }
 });
 
-process.on("exit", _ => {
-    if (state) { _servers.forEach(s=>s.stop()); }
+process.on("exit", code => {
+    if (!state) { return; }
+    state = false;
+    const msg = code === 11 ? "refresh" : "";
+    _servers.forEach(s=>s.stop(msg));
 })
 
 process.on('uncaughtException', e => log.red(e.stack));
