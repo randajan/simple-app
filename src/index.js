@@ -6,11 +6,9 @@ import open from "open";
 import { injectFile } from "./inject.js";
 
 import templates from "./templates.js";
-import { argv, parseConfig } from "./config.js";
+import { root, argv, envs, parseConfig } from "./config.js";
 
-export {
-  argv
-}
+export { root, argv, envs }
 
 export default async (isProd=false, config={})=>{
   const { port, srcdir, distdir, fe, be, injects, rebuildBuffer, log } = parseConfig(isProd, config);
