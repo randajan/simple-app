@@ -54,6 +54,8 @@ export default async (isProd=false, config={})=>{
 
   logbold.inverse(`Started at ${be.info.home.origin}`);
 
+  await rebootBE();
+
   if (isProd) { return; }
 
   const rebootOn = (name, customLog, path, exe, ignored)=>{
@@ -72,8 +74,6 @@ export default async (isProd=false, config={})=>{
       timer = setTimeout(reboot, rebuildBuffer);
     });
   }
-
-  await rebootBE();
 
   rebootOn("Public", logbold.magenta, srcdir+'/public/**/*', _=>rebootFE(true));
   rebootOn("Arc", logbold.cyan, srcdir+'/arc/**/*', _=>Promise.all([rebootBE(), rebootFE()]));
