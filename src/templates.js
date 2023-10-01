@@ -9,13 +9,13 @@ export default {
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="{{description}}" />
-<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="/index.css">
 <title>{{name}} v{{version}} by {{author}}</title>
 </head>
 
 <body>
 <div id="root"></div>
-<script src="index.js"></script>
+<script src="/index.js"></script>
 </body>
 
 </html>
@@ -36,7 +36,7 @@ setTimeout(_=>console.log(helloworld()));
     fe:`
 import fe, { bridge, info } from "@randajan/simple-app/fe";
 import helloworld from "../arc";
-import "./style.css";
+import "./index.css";
 
 document.getElementById("root").innerText = helloworld();
 `,

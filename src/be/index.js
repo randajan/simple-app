@@ -94,4 +94,4 @@ process.on("exit", code => {
     _servers.forEach(s=>s.stop(msg));
 })
 
-process.on('uncaughtException', e => log.red(e.stack));
+process.on('uncaughtException', e => console.warn(e.stack));
