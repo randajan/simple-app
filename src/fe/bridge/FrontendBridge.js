@@ -67,6 +67,10 @@ export class FrontendBridge {
         });
     }
 
+    async threadLock(channel, execute, ...args) {
+        return _privates.get(this).threadLock(channel, execute, ...args);
+    }
+
     async tx(channel, transceiver) {
         const { socket, threadLock, translator } = _privates.get(this);
         return threadLock(channel, async _=>{
