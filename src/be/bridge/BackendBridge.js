@@ -71,7 +71,7 @@ export class BackendBridge {
         const { groups } = _privates.get(this);
         if (groups.has(name)) { throw Error(`Bridge group '${name}' allready exist!`); }
         const group = new SocketGroups(this, grouper);
-        this.groups.set(name, group);
+        groups.set(name, group);
         return group;
     }
 
