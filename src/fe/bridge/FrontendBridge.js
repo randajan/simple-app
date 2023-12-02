@@ -23,7 +23,7 @@ const emit = async (socket, channel, body)=>{
 
 const hear = (socket, channel, receiver, threadLock)=>{
     socket.on(channel, async (body, ack)=>{
-        try { await ack(true, await threadLock(channel, receiver, body, socket)); }
+        try { await ack(true, await threadLock(channel, receiver, socket, body)); }
         catch(err) {
             console.warn(err);
             await ack(false, `FE > ${err}`);
@@ -42,6 +42,10 @@ export class FrontendBridge {
             channels:new Map(),
             translator:c=>c
         }
+
+        Object.defineProperties(this, {
+            socket:{ value:socket }
+        });
 
         _privates.set(this, _p);
     }
