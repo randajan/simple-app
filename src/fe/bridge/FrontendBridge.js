@@ -69,8 +69,8 @@ export class FrontendBridge {
 
     async tx(channel, transceiver) {
         const { socket, threadLock, translator } = _privates.get(this);
-        const rnbl = typeof transceiver === "function";
         return threadLock(channel, async _=>{
+            const rnbl = typeof transceiver === "function";
             const ch = translator(channel);
             return rnbl ? transceiver(body=>emit(socket, ch, body)) : emit(socket, ch, transceiver);
         });

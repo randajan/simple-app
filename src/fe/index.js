@@ -7,7 +7,8 @@ import { FrontendBridge } from "./bridge/FrontendBridge";
 const socket = socketIOClient(info.home.host);
 const bridge = new FrontendBridge(socket);
 
-bridge.rx("$$system", ({ action, source })=>{
+bridge.rx("$$system", (socket, { action, source })=>{
+
     if (action === "stop") { window.close(); } 
     else if (action === "refresh") {
         if (source !== "CSS") { setTimeout(_=>location.reload(), 100); }
