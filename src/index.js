@@ -3,10 +3,10 @@ import { watch } from "chokidar";
 import fs from "fs-extra";
 import open from "open";
 
-import { injectFile } from "./inject.js";
+import { injectFile } from "./tools/inject.js";
 
-import templates from "./templates.js";
-import { root, argv, envs, parseConfig } from "./config.js";
+import templates from "./tools/templates.js";
+import { root, argv, envs, parseConfig } from "./tools/config.js";
 
 export { root, argv, envs }
 

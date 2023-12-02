@@ -4,6 +4,7 @@ import { createServer as createServerHTTP } from "http";
 
 import { Server as IO } from "socket.io";
 import { info, log } from "../info";
+import { BackendBridge } from "./bridge/BackendBridge";
 
 const _servers = [];
 const enumerable = true;
@@ -15,22 +16,17 @@ export class Server {
             listener: null,
             state:"stopped", //state stopped, starting, started
             clients:{},
-            sockets:{}
         }
 
         const port = portOverride || info.port;
         const http = createServerHTTP(requestListener);
         const io = new IO(http);
+        const bridge = new BackendBridge(io);
 
         http.on("connection", c => {
             c.id = _p.cid++;
             _p.clients[c.id] = c;
             c.on("close", _ => delete _p.clients[c.id]);
-        });
-
-        io.on("connection", s => {
-            _p.sockets[s.id] = s;
-            s.on("disconnect", _ => delete _p.sockets[s.id]);
         });
 
         const start = async _=>{
@@ -45,10 +41,10 @@ export class Server {
             });
         }
     
-        const stop = async (msg, ...msgs)=>{
+        const stop = async (action="stop", source="BE")=>{
             if ( _p.state === "stopped" ) { return this; }
             if ( _p.state === "starting" ) { await _p.startProcess; }
-            io.emit("system", msg || "stop", ...msgs);
+            await bridge.tx("$$system", { action, source });
             Object.values(_p.clients).forEach(c => c.destroy());
             http.close();
             return this;
@@ -63,12 +59,7 @@ export class Server {
             http: { value: http },
             io: { value: io },
             listener: { get:_=>_p.listener },
-            bridge: {
-                enumerable, value: Object.defineProperties({}, {
-                    clients: { enumerable, get: _ => ({ ..._p.clients }) },
-                    sockets: { enumerable, get: _ => ({ ..._p.sockets }) },
-                })
-            },
+            bridge: { value:bridge },
             info: { enumerable, value:info },
             start: { value:start },
             stop: { value:stop },
@@ -81,17 +72,17 @@ export class Server {
 
 let state = true;
 parentPort.on("message", msg => {
-    const [ action, target ] = msg.split(":");
+    const [ action, source ] = msg.split(":");
     if (action === "exit") { process.exit(0); }
-    else if (action === "rebuild" && (target === "BE" || target === "Arc")) { process.exit(11); }
-    else if (action === "restart") { _servers.forEach(s=>s.io.emit("system", "refresh", target)); }
+    else if (action === "rebuild" && (source === "BE" || source === "Arc")) { process.exit(11); }
+    else if (action === "restart") { _servers.forEach(s=>s.bridge.tx("$$system", { action:"refresh", source })); }
 });
 
 process.on("exit", code => {
     if (!state) { return; }
     state = false;
-    const msg = code === 11 ? "refresh" : "";
-    _servers.forEach(s=>s.stop(msg));
+    const action = code === 11 ? "refresh" : "stop";
+    _servers.forEach(s=>s.stop(action));
 })
 
 process.on('uncaughtException', e => console.warn(e.stack));

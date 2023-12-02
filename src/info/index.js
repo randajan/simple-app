@@ -1,4 +1,4 @@
-import { logger } from "../logger";
+import { logger } from "../tools/logger";
 
 
 const enumerable = true;
