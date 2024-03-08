@@ -37,7 +37,7 @@ export const envs = _ => {
   return _envs = fse.readJSONSync(filePath);
 }
 
-const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, loader, format, info }) => {
+const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, loader, jsx, format, info }) => {
   let _build; //cache esbuild
 
   return async _ => {
@@ -56,7 +56,12 @@ const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, 
       splitting,
       external,
       plugins,
-      loader
+      loader,
+      jsx:jsx.transform,
+      jsxDev:jsx.dev,
+      jsxFactory:jsx.factory,
+      jsxFragment:jsx.fragment || jsx.factory,
+      jsxImportSource:jsx.importSource
     });
   }
 
@@ -72,6 +77,7 @@ export const parseConfig = (isProd, c = {}) => {
   const external = c.external || [];
   const plugins = c.plugins || [];
   const loader = c.loader || {};
+  const jsx = c.jsx || {};
 
   const srcdir = c.srcdir || "src";
   const distdir = c.distdir || "dist";
@@ -100,6 +106,7 @@ export const parseConfig = (isProd, c = {}) => {
     x.external = [...(x.external || []), ...external];
     x.plugins = [...(x.plugins || []), ...plugins];
     x.loader = { ...(x.loader || {}), ...loader };
+    x.jsx = x.jsx ? {...jsx, ...x.jsx} : jsx;
     x.rebuild = buildFactory(x);
   }
 
