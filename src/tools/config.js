@@ -1,16 +1,11 @@
 import { builtinModules } from "module";
 import { build } from 'esbuild';
 import approot from "app-root-path";
-import { logger } from "./logger";
 import { nodeExternalsPlugin } from "esbuild-node-externals";
 import fse from "fs-extra";
 
-
-export const argv = {};
-for (const arg of process.argv) {
-  const pair = String(arg).split("=");
-  if (pair.length === 2) { Object.defineProperty(argv, pair[0], { value: pair[1], enumerable: true }); }
-}
+import argv from "./argv";
+import { logger } from "./logger";
 
 export const env = argv.env || process?.env?.NODE_ENV || "dev";
 export const root = approot.path;
