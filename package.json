@@ -21,15 +21,15 @@
     "testWorker": "node testWorker.js"
   },
   "dependencies": {
-    "app-root-path": "^3.0.0",
-    "chalk": "^5.2.0",
-    "chokidar": "^3.5.3",
-    "esbuild": "^0.14.28",
-    "esbuild-node-externals": "^1.7.0",
-    "fs-extra": "^10.0.0",
-    "open": "^8.4.0",
-    "socket.io": "^4.4.1",
-    "socket.io-client": "^4.4.1"
+    "app-root-path": "^3.1.0",
+    "chalk": "^5.3.0",
+    "chokidar": "^3.6.0",
+    "esbuild": "0.16.17",
+    "esbuild-node-externals": "^1.13.0",
+    "fs-extra": "^11.2.0",
+    "open": "^10.1.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5"
   },
   "devDependencies": {},
   "files": [
@@ -58,8 +58,8 @@
     "url": "https://www.linkedin.com/in/randajan/"
   },
   "peerDependencies": {
-    "express": "^4.18.2",
-    "koa": "^2.14.2",
+    "express": "^4.19.2",
+    "koa": "^2.15.2",
     "koa-static": "^5.0.0"
   }
 }
