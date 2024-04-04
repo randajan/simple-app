@@ -5,6 +5,7 @@ import { builtinModules } from "module";
 
 await fs.remove("dist");
 
+
 await build({
     outdir:"dist",
     splitting: false,
