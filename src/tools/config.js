@@ -1,36 +1,11 @@
 import { builtinModules } from "module";
 import { build } from 'esbuild';
-import approot from "app-root-path";
-import { nodeExternalsPlugin } from "esbuild-node-externals";
-import fse from "fs-extra";
 
-import argv from "./argv";
-import { logger } from "./logger";
+import { env, externalsPlugin, log, pkg, root } from "./consts";
+import { argv } from "./argv";
+import { parseEnvs } from "./envs";
+import { mergeObj } from "./uni";
 
-export const env = argv.env || process?.env?.NODE_ENV || "dev";
-export const root = approot.path;
-
-const { name, description, version, author } = fse.readJSONSync(root + "/package.json");
-
-const _externalsPlugin = nodeExternalsPlugin({ allowList: ["info", "fe", "be", "be/express", "be/koa"].map(v => "@randajan/simple-app/" + v) });
-
-let _envs;
-export const envs = _ => {
-  if (_envs) { return _envs; }
-  const fileName = `.env.${env}.json`;
-  const filePath = root + `/` + fileName;
-  if (!fse.existsSync(filePath)) {
-    const tempName = "template.env.json";
-    const tempPath = root + `/` + tempName;
-    if (!fse.existsSync(tempPath)) {
-      fse.outputJSONSync(tempPath, { foo:"bar" }, { spaces: '\t' });
-      console.warn(`Not found '${tempName}' - created`);
-    }
-    fse.copyFileSync(tempPath, filePath);
-    console.warn(`Not found '${fileName}' - created from template`);
-  }
-  return _envs = fse.readJSONSync(filePath);
-}
 
 const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, loader, jsx, format, info }) => {
   let _build; //cache esbuild
@@ -62,9 +37,15 @@ const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, 
 
 }
 
-export const parseConfig = (isProd, c = {}) => {
-  const port = c.port || argv.port || 3000;
-  const info = { ...(c.info ? c.info : {}), isProd, env, name, description, version, author };
+export const parseConfig = (isProd, config = {}) => {
+  const envs = parseEnvs(isProd);
+  const c = mergeObj(envs, config, argv);
+
+  const guid = Array(16).fill().map(_=>Math.random().toString(36).slice(2)).join('');
+  const port = c.port || 3000;
+
+  const { name, description, version, author } = pkg;
+  const info = { ...(c.info ? c.info : {}), isProd, env, name, description, version, author, guid };
   const home = info.home = new URL(info.home || `http://localhost:${port}`);
   home.toJSON = _ => Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p => [p, home[p]]));
   const injects = c.injects || ["index.html"];
@@ -92,7 +73,7 @@ export const parseConfig = (isProd, c = {}) => {
   be.splitting = true;
   be.format = "esm";
   be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk"];
-  be.plugins = [...(be.plugins || []), _externalsPlugin];
+  be.plugins = [...(be.plugins || []), externalsPlugin];
 
   for (const x of [fe, be]) {
     x.srcdir = srcdir + "/" + x.dir;
@@ -105,6 +86,6 @@ export const parseConfig = (isProd, c = {}) => {
     x.rebuild = buildFactory(x);
   }
 
-  return { port, srcdir, distdir, fe, be, injects, rebuildBuffer, log: logger(name, version, env) }
+  return { port, srcdir, distdir, fe, be, injects, rebuildBuffer, log }
 
 }

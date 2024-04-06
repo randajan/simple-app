@@ -15,5 +15,4 @@ export default server;
 export { express };
 export const http = server.http;
 export const io = server.io;
-export const bridge = server.bridge;
 export const info = server.info;

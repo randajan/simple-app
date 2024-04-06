@@ -1,4 +1,6 @@
-const argv = {};
+import { fillObj } from "./uni";
+
+export const argv = {};
 
 const _trues = ["y", "t", "true"];
 const _falses = ["n", "f", "false"];
@@ -20,7 +22,5 @@ for (const arg of process.argv ) {
   const key = pair.shift();
   if (!key) { continue; }
 
-  Object.defineProperty(argv, key, {value:parseValue(pair.join("")), enumerable:true});
+  fillObj(argv, key.split("."), parseValue(pair.join("")));
 }
-
-export default argv;

@@ -3,13 +3,16 @@ import { watch } from "chokidar";
 import fs from "fs-extra";
 import open from "open";
 
-import argv from "./tools/argv.js";
-import { injectFile } from "./tools/inject.js";
+import { root } from "./tools/consts.js";
+import { argv } from "./tools/argv.js";
+import { injectFile } from "./tools/uni.js";
 
 import templates from "./tools/templates.js";
-import { root, envs, parseConfig } from "./tools/config.js";
+import { parseConfig } from "./tools/config.js";
 
-export { root, argv, envs }
+
+
+export { root, argv }
 
 export default async (isProd=false, config={})=>{
   const { port, srcdir, distdir, fe, be, injects, rebuildBuffer, log } = parseConfig(isProd, config);

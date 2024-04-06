@@ -9,13 +9,13 @@ export default {
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="{{description}}" />
-<link rel="stylesheet" href="/index.css">
+<link rel="stylesheet" href="/index.css?version={{version}}">
 <title>{{name}} v{{version}} by {{author}}</title>
 </head>
 
 <body>
 <div id="root"></div>
-<script src="/index.js"></script>
+<script src="/index.js?version={{version}}"></script>
 </body>
 
 </html>
@@ -26,7 +26,7 @@ import info from "@randajan/simple-app/info";
 export default _=>"hello world "+JSON.stringify(info, null, 2);
 `,
     be:`
-import be, { express, app, http, io, bridge, info } from "@randajan/simple-app/be/express";
+import be, { express, app, http, io, info } from "@randajan/simple-app/be/express";
 import helloworld from "../arc";
 
 app.use("/", express.static(info.dir.fe));
@@ -34,7 +34,7 @@ app.use("/", express.static(info.dir.fe));
 setTimeout(_=>console.log(helloworld()));
 `,
     fe:`
-import fe, { bridge, info } from "@randajan/simple-app/fe";
+import fe, { socket, info } from "@randajan/simple-app/fe";
 import helloworld from "../arc";
 import "./index.css";
 

@@ -4,7 +4,6 @@ import { createServer as createServerHTTP } from "http";
 
 import { Server as IO } from "socket.io";
 import { info, log } from "../info";
-import { BackendBridge } from "./bridge/BackendBridge";
 
 const _servers = [];
 const enumerable = true;
@@ -21,7 +20,6 @@ export class Server {
         const port = portOverride || info.port;
         const http = createServerHTTP(requestListener);
         const io = new IO(http);
-        const bridge = new BackendBridge(io);
 
         http.on("connection", c => {
             c.id = _p.cid++;
@@ -44,7 +42,7 @@ export class Server {
         const stop = async (action="stop", source="BE")=>{
             if ( _p.state === "stopped" ) { return this; }
             if ( _p.state === "starting" ) { await _p.startProcess; }
-            await bridge.tx("$$system", { action, source });
+            io.emit(info.guid, action, source);
             Object.values(_p.clients).forEach(c => c.destroy());
             http.close();
             return this;
@@ -59,7 +57,6 @@ export class Server {
             http: { value: http },
             io: { value: io },
             listener: { get:_=>_p.listener },
-            bridge: { value:bridge },
             info: { enumerable, value:info },
             start: { value:start },
             stop: { value:stop },
@@ -75,7 +72,7 @@ parentPort.on("message", msg => {
     const [ action, source ] = msg.split(":");
     if (action === "exit") { process.exit(0); }
     else if (action === "rebuild" && (source === "BE" || source === "Arc")) { process.exit(11); }
-    else if (action === "restart") { _servers.forEach(s=>s.bridge.tx("$$system", { action:"refresh", source })); }
+    else if (action === "restart") { _servers.forEach(s=>s.io.emit(info.guid, "refresh", source)); }
 });
 
 process.on("exit", code => {
