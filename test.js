@@ -7,5 +7,18 @@ sapp(argv.env === "prod", {
     info:{
         top:"best",
         arr:["three"]
+    },
+    fe:{
+        loader:{
+            ".js":"jsx",
+            '.png': 'file',
+            ".jpg": "file",
+            ".gif": "file",
+            ".eot": "file",
+            ".woff": "file",
+            ".ttf": "file",
+            ".md":"text",
+            ".jsonc":"json"
+        },
     }
 })

@@ -1,13 +1,19 @@
 import fse from "fs-extra";
 
 export const isObj = any=>any != null && typeof any === "object" && !Array.isArray(any);
-export const isObjEmpty = any=>{ for (let i in any) { return false; } return true; }
+export const isObjEmpty = any=>{ for (let i in any) { return false; } return true; };
+
+
+const escapeDots = str=>str.replaceAll(".", "\\.");
+const unescapeDots = str=>str.replaceAll("\\.", ".");
+
+const splitByRealDots = str=>(str.match(/(?:\\.|[^.])+/g) || []);
 
 export const flatObj = (obj, index={}, prefix="")=>{
   for (let i in obj) {
     const f = obj[i];
     if (f === undefined) { continue; }
-    const key = (prefix ? prefix+"." : "")+i;
+    const key = (prefix ? prefix+"." : "")+escapeDots(i);
     if (Array.isArray(f) && Array.isArray(index[key])) { index[key] = [...index[key], ...f]; } //merging array
     else if (isObj(f)) { flatObj(f, index, key); }
     else { index[key] = f; }
@@ -16,7 +22,9 @@ export const flatObj = (obj, index={}, prefix="")=>{
 }
 
 export const fillObj = (obj, path, value)=>{
-  const key = path.shift();
+  if (!Array.isArray(path)) { path = splitByRealDots(path); }
+
+  const key = unescapeDots(path.shift());
   const remove = value === undefined;
 
   if (!path.length) {
@@ -39,7 +47,7 @@ export const fillObj = (obj, path, value)=>{
 export const mergeObj = (...objs)=>{
   const flat = {}, result = {};
   for (const obj of objs) { flatObj(obj, flat); }
-  for (const key in flat) { fillObj(result, key.split("."), flat[key]); }
+  for (const key in flat) { fillObj(result, key, flat[key]); }
   return result;
 }
 

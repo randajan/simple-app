@@ -45,8 +45,8 @@ export const parseEnvs = (isProd)=>{
   }
 
   const updates = [...tempMissing.map(k=>"add: "+k), ...envsMissing.map(k=>"removed: "+k)];
-  for (const key of tempMissing) { fillObj(temp, key.split("."), getTemplate(envsFlat[key])); }
-  for (const key of envsMissing) { fillObj(temp, key.split(".")); }
+  for (const key of tempMissing) { fillObj(temp, key, getTemplate(envsFlat[key])); }
+  for (const key of envsMissing) { fillObj(temp, key); }
 
   log.yellow(`${tempPath} auto updated:\n  ${updates.join("\n  ")}`);
 

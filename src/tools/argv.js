@@ -22,5 +22,5 @@ for (const arg of process.argv ) {
   const key = pair.shift();
   if (!key) { continue; }
 
-  fillObj(argv, key.split("."), parseValue(pair.join("")));
+  fillObj(argv, key, parseValue(pair.join("")));
 }
