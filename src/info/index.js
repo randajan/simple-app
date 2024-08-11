@@ -1,5 +1,5 @@
+import { importFiles } from "../fe";
 import { logger } from "../tools/logger";
-
 
 const enumerable = true;
 const lockObject = o=>{
@@ -17,6 +17,7 @@ const lockObject = o=>{
     return r;
 }
 
+export { importFiles }
 export const info = lockObject(__sapp_info);
 export const log = logger(info.name, info.version, info.env);
 
