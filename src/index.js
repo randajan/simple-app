@@ -10,9 +10,9 @@ import { injectFile } from "./tools/uni.js";
 import templates from "./tools/templates.js";
 import { parseConfig } from "./tools/config.js";
 
+import { importFiles } from "./tools/importFiles.js";
 
-
-export { root, argv }
+export { root, argv, importFiles }
 
 export default async (isProd=false, config={})=>{
   const { port, srcdir, distdir, fe, be, injects, rebuildBuffer, log } = parseConfig(isProd, config);

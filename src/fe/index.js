@@ -2,6 +2,7 @@
 import socketIOClient from "socket.io-client";
 
 import { info, log } from "../info";
+import { importFiles } from "../tools/importFiles";
 
 const socket = socketIOClient(info.home.host);
 
@@ -25,10 +26,11 @@ const enumerable = true;
 export default Object.defineProperties({}, {
     log:{enumerable, value:log},
     info:{enumerable, value:info}
-})
+});
 
 export {
     socket,
     log,
-    info
+    info,
+    importFiles
 }
