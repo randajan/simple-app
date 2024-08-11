@@ -1,4 +1,4 @@
-import { importFiles } from "../fe";
+import { importFiles } from "../tools/importFiles";
 import { logger } from "../tools/logger";
 
 const enumerable = true;
