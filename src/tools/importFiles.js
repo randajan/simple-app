@@ -1,7 +1,7 @@
 
 export const importFiles = (files, opt={})=>{
-    const prefix = String.jet.to(opt.prefix) || "./";
-    const suffix = String.jet.to(opt.suffix);
+    const prefix = opt.prefix || "./";
+    const suffix = opt.suffix;
     const trait = opt.trait ? opt.trait : (_=>_);
 
     const r = {};
