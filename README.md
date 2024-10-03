@@ -44,6 +44,7 @@ sapp(
       external:[],                      //backend esbuild external libraries
       plugins:[],                       //backend esbuild plugins
       loader:{},                        //backend esbuild loader
+      io:{},                            //backend default io config
       info:{},                          //variables accessible only at backend via import info from "@randajan/simple-app/info"
     },
     fe:{                                //frontend options
@@ -53,6 +54,7 @@ sapp(
       external:[],                      //frontend esbuild external libraries
       plugins:[],                       //frontend esbuild plugins
       loader:{},                        //frontend esbuild loader
+      io:{},                            //frontend default io config
       info:{},                          //variables accessible only at frontend via import info from "@randajan/simple-app/info"
     }
   }

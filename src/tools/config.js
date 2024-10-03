@@ -7,7 +7,7 @@ import { parseEnvs } from "./envs";
 import { mergeObj } from "./uni";
 
 
-const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, loader, jsx, format, info }) => {
+const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, loader, jsx, format, info, io }) => {
   let _build; //cache esbuild
 
   return async _ => {
@@ -22,7 +22,7 @@ const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, 
       incremental: true,
       entryPoints: entries,
       outdir: distdir,
-      define: { __sapp_info: JSON.stringify(info) },
+      define: { __sapp_info: JSON.stringify(info), __sapp_io_config:JSON.stringify(io) },
       splitting,
       external,
       plugins,
@@ -83,6 +83,7 @@ export const parseConfig = (isProd, config = {}) => {
     x.plugins = [...(x.plugins || []), ...plugins];
     x.loader = { ...(x.loader || {}), ...loader };
     x.jsx = x.jsx ? {...jsx, ...x.jsx} : jsx;
+    x.io = x.io || {};
     x.rebuild = buildFactory(x);
   }
 

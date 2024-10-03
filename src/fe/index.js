@@ -4,7 +4,7 @@ import socketIOClient from "socket.io-client";
 import { info, log } from "../info";
 import { importFiles } from "../tools/importFiles";
 
-const socket = socketIOClient(info.home.host);
+const socket = socketIOClient(info.home.host, __sapp_io_config);
 
 socket.on(info.guid, (action, source)=>{
     if (action === "stop") { window.close(); } 

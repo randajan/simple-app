@@ -19,7 +19,7 @@ export class Server {
 
         const port = portOverride || info.port;
         const http = createServerHTTP(requestListener);
-        const io = new IO(http);
+        const io = new IO(http, __sapp_io_config);
 
         http.on("connection", c => {
             c.id = _p.cid++;

@@ -8,6 +8,11 @@ sapp(argv.env === "prod", {
         top:"best",
         arr:["three"]
     },
+    be:{
+        io:{
+            test:"bar"
+        }
+    },
     fe:{
         loader:{
             ".js":"jsx",
@@ -19,6 +24,6 @@ sapp(argv.env === "prod", {
             ".ttf": "file",
             ".md":"text",
             ".jsonc":"json"
-        },
+        }
     }
 })
