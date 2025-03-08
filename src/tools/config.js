@@ -2,9 +2,7 @@ import { builtinModules } from "module";
 import { build } from 'esbuild';
 
 import { env, externalsPlugin, log, pkg, root } from "./consts";
-import { argv } from "./argv";
 import { parseEnvs } from "./envs";
-import { mergeObj } from "./uni";
 
 
 const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, loader, jsx, format, info, io }) => {
@@ -37,17 +35,16 @@ const buildFactory = ({ entries, distdir, minify, splitting, external, plugins, 
 
 }
 
-export const parseConfig = (isProd, config = {}) => {
-  const envs = parseEnvs(isProd);
-  const c = mergeObj(envs, config, argv);
+export const parseConfig = (config = {}) => {
+  const c = parseEnvs(config);
 
   const guid = Array(16).fill().map(_=>Math.random().toString(36).slice(2)).join('');
-  const port = c.port || 3000;
 
   const { name, description, version, author } = pkg;
+  const isProd = c.isProd = (c.isProd ? true : false);
+  const ports = Array.isArray(c.port) ? c.port : [c.port || 0];
+
   const info = { ...(c.info ? c.info : {}), isProd, env, name, description, version, author, guid };
-  const home = info.home = new URL(info.home || `http://localhost:${port}`);
-  home.toJSON = _ => Object.fromEntries(["host", "hostname", "origin", "pathname", "port", "protocol"].map(p => [p, home[p]]));
   const injects = c.injects || ["index.html"];
   const rebuildBuffer = Math.max(0, Number(c.rebuildBuffer) || 100);
   const external = c.external || [];
@@ -69,7 +66,7 @@ export const parseConfig = (isProd, config = {}) => {
 
   be.dir = be.dir || "backend";
   be.distdir = distdir + "/" + be.dir;
-  be.info = { ...(be.info || {}), ...info, port, dir: { root, dist: distdir, fe: fe.distdir, be: be.distdir } };
+  be.info = { ...(be.info || {}), ...info, ports, dir: { root, dist: distdir, fe: fe.distdir, be: be.distdir } };
   be.format = (be.format || "esm");
   be.splitting = (be.format === "esm");
   be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk"];
@@ -87,6 +84,6 @@ export const parseConfig = (isProd, config = {}) => {
     x.rebuild = buildFactory(x);
   }
 
-  return { port, srcdir, distdir, fe, be, injects, rebuildBuffer, log }
+  return { isProd, srcdir, distdir, fe, be, injects, rebuildBuffer, log }
 
 }

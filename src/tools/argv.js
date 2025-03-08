@@ -2,13 +2,21 @@ import { fillObj } from "./uni";
 
 export const argv = {};
 
-const _trues = ["y", "t", "true"];
-const _falses = ["n", "f", "false"];
+const _trues = /^true$/i;
+const _falses = /^false$/i;
+
+
 
 const parseValue = raw=>{
-  const low = raw.toLowerCase();
-  if (_trues.includes(low)) { return true; }
-  if (_falses.includes(low)) { return false; }
+  raw = raw.trim();
+
+  if (_trues.test(raw)) { return true; }
+  if (_falses.test(raw)) { return false; }
+
+
+  if (raw.startsWith("[") && raw.endsWith("]")) {
+    return raw.slice(1, -1).split(",").map(parseValue);
+  }
 
   const num = Number(raw);
   if (!isNaN(num)) { return num; }

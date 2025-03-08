@@ -2,7 +2,8 @@ import path from "path";
 import fse from "fs-extra";
 
 import { env, log, root } from "./consts";
-import { fillObj, flatObj } from "./uni";
+import { fillObj, flatObj, mergeObj } from "./uni";
+import { argv } from "./argv";
 
 const getTemplate = any=>{
   if (any == null) { return any; }
@@ -23,11 +24,13 @@ const ensureJSONSync = (pathname, defaultContent={}, msgSuffix="")=>{
   return defaultContent;
 }
 
-export const parseEnvs = (isProd)=>{
+
+
+export const parseEnvs = (config)=>{
   
   const tempPath = path.normalize(`${root}/template.env.json`);
   const envsPath = path.normalize(`${root}/.env.${env}.json`);
-  const temp = ensureJSONSync(tempPath);
+  const temp = ensureJSONSync(tempPath, {isProd:false});
   const envs = ensureJSONSync(envsPath, temp, "from template");
 
   const tempFlat = flatObj(temp);
@@ -36,9 +39,11 @@ export const parseEnvs = (isProd)=>{
   const tempMissing = Object.keys(envsFlat).filter(k=>!tempFlat.hasOwnProperty(k));
   const envsMissing = Object.keys(tempFlat).filter(k=>!envsFlat.hasOwnProperty(k));
 
-  if (!tempMissing.length && !envsMissing.length) { return envs; }
+  const result = mergeObj(envs, config, argv);
 
-  if (isProd) {
+  if (!tempMissing.length && !envsMissing.length) { return result; }
+
+  if (result.isProd) {
     const mismatch = [...envsMissing.map(k=>"missing: "+k), ...tempMissing.map(k=>"unknown: "+k)];
     log.red(`${envsPath} configuration mismatch:\n  ${mismatch.join("\n  ")}`);
     throw new Error("Env configuration mismatch");
@@ -52,5 +57,5 @@ export const parseEnvs = (isProd)=>{
 
   fse.outputJSONSync(tempPath, temp, { spaces: 4 });
 
-  return envs;
+  return result;
 }

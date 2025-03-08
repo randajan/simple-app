@@ -1,10 +1,10 @@
 
 import socketIOClient from "socket.io-client";
 
-import { info, log } from "../info";
+import { info } from "../info";
 import { importFiles } from "../tools/importFiles";
 
-const socket = socketIOClient(info.home.host, __sapp_io_config);
+const socket = socketIOClient(window.location.host, __sapp_io_config);
 
 socket.on(info.guid, (action, source)=>{
     if (action === "stop") { window.close(); } 
@@ -24,13 +24,13 @@ socket.on(info.guid, (action, source)=>{
 
 const enumerable = true;
 export default Object.defineProperties({}, {
-    log:{enumerable, value:log},
-    info:{enumerable, value:info}
+    socket:{enumerable, value:socket},
+    info:{enumerable, value:info},
+    importFiles:{enumerable, value:importFiles}
 });
 
 export {
     socket,
-    log,
     info,
     importFiles
 }

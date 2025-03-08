@@ -1,7 +1,6 @@
-import sapp, { argv } from "./dist/index.js";
+import sapp from "./dist/index.js";
 
-sapp(argv.env === "prod", {
-    port:4005,
+sapp({
     distdir:"test/dist",
     srcdir:"test/src",
     info:{
