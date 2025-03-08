@@ -64,14 +64,14 @@ export const parseConfig = (isProd, config = {}) => {
   fe.dir = fe.dir || "frontend";
   fe.distdir = distdir + "/" + fe.dir;
   fe.info = { ...(fe.info || {}), ...info };
-  fe.splitting = false;
   fe.format = "iife";
+  fe.splitting = false;
 
   be.dir = be.dir || "backend";
   be.distdir = distdir + "/" + be.dir;
   be.info = { ...(be.info || {}), ...info, port, dir: { root, dist: distdir, fe: fe.distdir, be: be.distdir } };
-  be.splitting = true;
   be.format = (be.format || "esm");
+  be.splitting = (be.format === "esm");
   be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk"];
   be.plugins = [...(be.plugins || []), externalsPlugin];
 
