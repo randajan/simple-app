@@ -25,7 +25,7 @@ import sapp from "@randajan/simple-app";
 
 sapp({
   isProd:false,                       //false = start dev server; true = generate minify build and start prod server
-  port:0,                             //internal port of the main http server (can be array for alternative ports)
+  port:3000,                          //internal port of the main http server (can be array for alternative ports)
   srcdir:"src",                       //directory of source code
   distdir:"dist",                     //directory of build
   rebuildBuffer:100,                  //delay between src changed and rebuild happend

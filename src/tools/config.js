@@ -42,7 +42,7 @@ export const parseConfig = (config = {}) => {
 
   const { name, description, version, author } = pkg;
   const isProd = c.isProd = (c.isProd ? true : false);
-  const ports = Array.isArray(c.port) ? c.port : [c.port || 0];
+  const ports = Array.isArray(c.port) ? c.port : [c.port || 3000];
 
   const info = { ...(c.info ? c.info : {}), isProd, env, name, description, version, author, guid };
   const injects = c.injects || ["index.html"];

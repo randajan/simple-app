@@ -42,6 +42,7 @@ export class Server extends EventEmitter {
         const io = new IO(http, __sapp_io_config);
 
         const restate = _=>{
+            
             _p.port = http.address()?.port;
             _p.state = _p.port ? "running" : "stopped";
             if (_p.port) {
@@ -127,12 +128,18 @@ export class Server extends EventEmitter {
     }
 }
 
-parentPort?.on("message", ([action, source]) => {
-    if (action === "rebuild" && (source === "BE" || source === "Arc")) { process.exit(11); }
+const exit = async action=>{
+    await Server.map(s=>s.stop(action));
+    process.exit(0);
+}
+
+parentPort?.on("message", async ([action, source]) => {
+    if (action === "exit") { exit(); }
+    else if (action === "rebuild" && (source === "BE" || source === "Arc")) { exit("refresh"); }
     else if (action === "restart") { Server.map(s => s.io.emit(info.guid, "refresh", source)); }
 });
 
-["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal =>process.on(signal, _=>process.exit(0)));
+["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal=>process.on(signal, _=>exit()));
 
-process.on("exit", code=>Server.map(s=>s.stop(code === 11 ? "refresh" : "stop")));
 process.on('uncaughtException', e => console.warn(e.stack));
+

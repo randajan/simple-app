@@ -63,7 +63,7 @@ export default async (config = {}) => {
     ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal => {
         process.on(signal, _ => {
             be.current.once("exit", _ => process.exit(0));
-            be.current.terminate();
+            be.current.postMessage(["exit"]);
         });
     });
 
