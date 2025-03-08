@@ -69,7 +69,7 @@ export const parseConfig = (config = {}) => {
   be.info = { ...(be.info || {}), ...info, ports, dir: { root, dist: distdir, fe: fe.distdir, be: be.distdir } };
   be.format = (be.format || "esm");
   be.splitting = (be.format === "esm");
-  be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk"];
+  be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk", "detect-port"];
   be.plugins = [...(be.plugins || []), externalsPlugin];
 
   for (const x of [fe, be]) {
