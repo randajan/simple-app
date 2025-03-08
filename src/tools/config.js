@@ -71,7 +71,7 @@ export const parseConfig = (isProd, config = {}) => {
   be.distdir = distdir + "/" + be.dir;
   be.info = { ...(be.info || {}), ...info, port, dir: { root, dist: distdir, fe: fe.distdir, be: be.distdir } };
   be.splitting = true;
-  be.format = "esm";
+  be.format = (be.format || "esm");
   be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk"];
   be.plugins = [...(be.plugins || []), externalsPlugin];
 

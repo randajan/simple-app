@@ -39,6 +39,7 @@ sapp(
     injects:["index.html"],             //dist/frontend files where info variables will be injected between brackets {{name}}
     be:{                                //backend options
       dir:"backend",                    //backend subdirectory
+      format:"esm",                     //backend format
       minify:isProd,                    //backend minify - true = generate minify build; if null then isProd 
       entries:["index.js"],             //backend entry files
       external:[],                      //backend esbuild external libraries
