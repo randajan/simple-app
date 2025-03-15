@@ -9,6 +9,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./be": "./dist/be/index.js",
+    "./be/server": "./dist/be/server.js",
     "./be/express": "./dist/be/express.js",
     "./be/koa": "./dist/be/koa.js",
     "./fe": "./dist/fe/index.js",
@@ -22,12 +23,11 @@
     "testWorker": "node testWorker.js"
   },
   "dependencies": {
-    "app-root-path": "^3.1.0",
     "chalk": "^5.3.0",
     "chokidar": "^3.6.0",
     "detect-port": "^2.1.0",
-    "esbuild": "0.16.17",
-    "esbuild-node-externals": "^1.13.0",
+    "esbuild": "^0.25.1",
+    "esbuild-node-externals": "^1.18.0",
     "fs-extra": "^11.2.0",
     "open": "^10.1.0",
     "socket.io": "^4.7.5",

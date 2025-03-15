@@ -63,7 +63,7 @@ export default async (config = {}) => {
     ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal => {
         process.on(signal, _ => {
             be.current.once("exit", _ => process.exit(0));
-            be.current.postMessage(["exit"]);
+            be.current.postMessage(["stop"]);
         });
     });
 
@@ -77,9 +77,9 @@ export default async (config = {}) => {
         const reboot = async _ => {
             const msg = source + " change";
             const current = be.current;
-            if (current) { current.postMessage(["rebuild", source]); }
-            try { await exe(); } catch (e) { logred(msg, "failed"); log(e.stack); return; };
             if (current) { current.postMessage(["restart", source]); }
+            try { await exe(); } catch (e) { logred(msg, "failed"); log(e.stack); return; };
+            if (current) { current.postMessage(["refresh", source]); }
             customLog(msg + "d");
         }
 
