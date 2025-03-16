@@ -1,11 +1,9 @@
-import { Std } from "../tools/std";
+import { StdIO } from "@randajan/std-io";
 
 const _beforeStop = new Set();
 const _beforeRestart = new Set();
 
-export { Std };
-
-export const std = new Std(process.stdin, process.stdout);
+export const std = new StdIO({process});
 
 export const onStop = (cb)=>{
     _beforeStop.add(cb);
@@ -21,18 +19,18 @@ export const stop = async (isRestart)=>{
     const int = setTimeout(_=>process.exit(1), 3000);
     await Promise.all([..._beforeStop].map(cb=>cb(isRestart)));
     clearTimeout(int);
-    process.exit(0);
+    setTimeout(_=>process.exit(0), 100);
+    return true;
 }
 
 export const restart = async (source)=>{
     await Promise.all([..._beforeRestart].map(cb=>cb(source)));
+    return true;
 }
 
-std.on("data", async ({ type, cmd, source }) => {
-    if (type !== "cmd") { return; }
-    if (cmd === "stop") { return stop(); }
+std.rx("cmd", async ({ cmd, source }) => {
+    if (cmd === "stop") { return stop(false); }
     if (cmd !== "restart") { return; }
-
     return (source === "BE" || source === "Arc") ? stop(true) : restart(source);
 });
 

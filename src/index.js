@@ -10,9 +10,10 @@ import templates from "./tools/templates.js";
 import { parseConfig } from "./tools/config.js";
 
 import { importFiles } from "./tools/importFiles.js";
-import { Std } from "./tools/std.js";
 import { spawn } from "child_process";
 import path from "path";
+import { StdIO } from "@randajan/std-io";
+
 
 
 export { root, argv, importFiles }
@@ -49,15 +50,16 @@ export default async (config = {}) => {
     const rebootBE = async _ => {
         await be.rebuild();
         be.current = spawn("node", [path.join("./", be.distdir, "/index.js")], { stdio: ["pipe", "pipe", "pipe"] });
-        be.std = new Std(be.current.stdout, be.current.stdin);
-        be.std.on("log", console.log);
-        be.std.on("data", ({type, serverId, port, autoOpen})=>{
-            if (type !== "httpServer") { return; }
+        be.std = new StdIO({process:be.current});
+        be.std.rx("log", console.log);
+        be.std.rx("error", console.error);
+        be.std.rx("http", ({serverId, port, autoOpen})=>{
             const knownPort = servers.get(serverId);
-            if (knownPort === port) { return; }
+            if (knownPort === port) { return false; }
             servers.set(serverId, port);
             logmain(`Server id '${serverId}'`, `${knownPort ? "re" : ""}started at port '${port}'`);
             if (!isProd && autoOpen) { open(`http://localhost:${port}`); }
+            return true;
         });
     }
 
@@ -69,7 +71,7 @@ export default async (config = {}) => {
     ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal => {
         process.on(signal, _ => {
             be.current.once("exit", _ => process.exit(0));
-            be.std.post({type:"cmd", cmd:"stop"});
+            be.std.tx("cmd", {cmd:"stop"});
         });
     });
 
@@ -83,9 +85,9 @@ export default async (config = {}) => {
         const reboot = async _ => {
             const msg = source + " change";
             const { std } = be;
-            if (std && before) { std.post({type:"cmd", cmd:"restart", source}); }
+            if (std && before) { std.tx("cmd", {cmd:"restart", source}); }
             try { await exe(); } catch (e) { logred(msg, "failed"); log(e.stack); return; };
-            if (std && !before) { std.post({type:"cmd", cmd:"restart", source}); }
+            if (std && !before) { std.tx("cmd", {cmd:"restart", source}); }
             customLog(msg + "d");
         }
 

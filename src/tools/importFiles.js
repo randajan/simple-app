@@ -2,7 +2,7 @@
 export const importFiles = (files, opt={})=>{
     const prefix = opt.prefix || "./";
     const suffix = opt.suffix || "";
-    const trait = opt.trait ? opt.trait : (_=>_);
+    const trait = opt.trait ? opt.trait : ((nm, ex)=>ex[nm] || ex.default);
 
     const r = {};
 
@@ -11,7 +11,7 @@ export const importFiles = (files, opt={})=>{
         if (suffix && !pathname.endsWith(suffix)) { return; }
         const name = pathname.slice(prefix.length, pathname.length-suffix.length);
         const exports = files.default[i];
-        r[name] = trait(exports[name] || exports.default);
+        r[name] = trait(name, exports);
     });
 
     return r;
