@@ -1,7 +1,7 @@
 import { Std } from "../tools/std";
 
 const _beforeStop = new Set();
-const _beforeRefresh = new Set();
+const _beforeRestart = new Set();
 
 export { Std };
 
@@ -12,9 +12,9 @@ export const onStop = (cb)=>{
     return _=>{ _beforeStop.delete(cb); }
 }
 
-export const onRefresh = (cb)=>{
-    _beforeRefresh.add(cb);
-    return _=>{ _beforeRefresh.delete(cb); }
+export const onRestart = (cb)=>{
+    _beforeRestart.add(cb);
+    return _=>{ _beforeRestart.delete(cb); }
 }
 
 export const stop = async (isRestart)=>{
@@ -24,15 +24,16 @@ export const stop = async (isRestart)=>{
     process.exit(0);
 }
 
-export const refresh = async (source)=>{
-    await Promise.all([..._beforeRefresh].map(cb=>cb(source)));
+export const restart = async (source)=>{
+    await Promise.all([..._beforeRestart].map(cb=>cb(source)));
 }
 
 std.on("data", async ({ type, cmd, source }) => {
     if (type !== "cmd") { return; }
-    if (cmd === "stop") { await stop(); }
-    else if (cmd === "restart" && (source === "BE" || source === "Arc")) { await stop(true); }
-    else if (cmd === "refresh") { await refresh(source); }
+    if (cmd === "stop") { return stop(); }
+    if (cmd !== "restart") { return; }
+
+    return (source === "BE" || source === "Arc") ? stop(true) : restart(source);
 });
 
 ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal=>process.on(signal, _=>stop(false)));

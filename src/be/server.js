@@ -4,18 +4,18 @@ import { Server as IO } from "socket.io";
 import { info } from "../info";
 import EventEmitter from "events";
 import { detect } from "detect-port";
-import { onStop, onRefresh, std, Std, stop, refresh } from ".";
+import { onStop, onRestart, std, Std, stop, restart } from ".";
 
 const enumerable = true;
 const _servers = new Map();
 
 onStop(isRestart=>Server.map(s=>s.stop(isRestart)));
-onRefresh(source=>Server.map(s => s.io.emit(info.guid, true, source)));
+onRestart(source=>Server.map(s => s.io.emit(info.guid, true, source)));
 
 export {
-    Std, std, stop, refresh,
+    Std, std, stop, restart,
     onStop,
-    onRefresh
+    onRestart
 }
 
 export class Server extends EventEmitter {
@@ -55,7 +55,7 @@ export class Server extends EventEmitter {
             _p.state = port ? "running" : "stopped";
             if (port) {
                 _p.portLast = port;
-                std.post({id:this.id, port, autoOpen});
+                std.post({type:"httpServer", id:this.id, port, autoOpen});
             }
             this.emit("state", _p.state, _p.port);
         }

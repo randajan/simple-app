@@ -51,7 +51,8 @@ export default async (config = {}) => {
         be.current = spawn("node", [path.join("./", be.distdir, "/index.js")], { stdio: ["pipe", "pipe", "pipe"] });
         be.std = new Std(be.current.stdout, be.current.stdin);
         be.std.on("log", console.log);
-        be.std.on("data", ({serverId, port, autoOpen})=>{
+        be.std.on("data", ({type, serverId, port, autoOpen})=>{
+            if (type !== "httpServer") { return; }
             const knownPort = servers.get(serverId);
             if (knownPort === port) { return; }
             servers.set(serverId, port);
@@ -78,13 +79,13 @@ export default async (config = {}) => {
 
     if (isProd) { return; }
 
-    const rebootOn = (source, customLog, path, exe, ignored) => {
+    const rebootOn = (before, source, customLog, path, exe, ignored) => {
         const reboot = async _ => {
             const msg = source + " change";
-            const { current, std } = be;
-            if (current) { std.post({type:"cmd", cmd:"restart", source}); }
+            const { std } = be;
+            if (std && before) { std.post({type:"cmd", cmd:"restart", source}); }
             try { await exe(); } catch (e) { logred(msg, "failed"); log(e.stack); return; };
-            if (current) { std.post({type:"cmd", cmd:"refresh", source}); }
+            if (std && !before) { std.post({type:"cmd", cmd:"restart", source}); }
             customLog(msg + "d");
         }
 
@@ -95,10 +96,10 @@ export default async (config = {}) => {
         });
     }
 
-    rebootOn("Public", logbold.magenta, srcdir + '/public/**/*', _ => rebootFE(true));
-    rebootOn("Arc", logbold.cyan, srcdir + '/arc/**/*', _ => Promise.all([rebootBE(), rebootFE()]));
-    rebootOn("CSS", logbold.yellow, [fe.srcdir + '/**/*.css', fe.srcdir + '/**/*.scss'], _ => rebootFE());
-    rebootOn("FE", logbold.green, fe.srcdir + '/**/*', _ => rebootFE(), /(\.s?css)$/);
-    rebootOn("BE", logbold.blue, be.srcdir + '/**/*', _ => rebootBE());
+    rebootOn(false, "Public", logbold.magenta, srcdir + '/public/**/*', _ => rebootFE(true));
+    rebootOn(true, "Arc", logbold.cyan, srcdir + '/arc/**/*', _ => Promise.all([rebootBE(), rebootFE()]));
+    rebootOn(false, "CSS", logbold.yellow, [fe.srcdir + '/**/*.css', fe.srcdir + '/**/*.scss'], _ => rebootFE());
+    rebootOn(false, "FE", logbold.green, fe.srcdir + '/**/*', _ => rebootFE(), /(\.s?css)$/);
+    rebootOn(true, "BE", logbold.blue, be.srcdir + '/**/*', _ => rebootBE());
 
 }
