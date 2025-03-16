@@ -127,10 +127,10 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.25.1.tgz#7d79922cb2d88f9048f06393dbf62d2e4accb584"
   integrity sha512-Y1EQdcfwMSeQN/ujR5VayLOJ1BHaK+ssyk0AEzPjC+t1lITgsnccPqFjb6V+LsTp/9Iov4ysfjxLaGJ9RPtkVg==
 
-"@randajan/std-io@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@randajan/std-io/-/std-io-1.0.1.tgz#e3e6e4d28109f6f0372fbccde96f4c3b81fbf82e"
-  integrity sha512-/d+P5G9IhbFIeJ/bIFPblBD/Dwjn9aXoHEeDCR7pqoFlxmQVbfDWXtgPDgGudOkeFN6qgWJr3NE602vvy+ZADg==
+"@randajan/std-io@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@randajan/std-io/-/std-io-1.0.2.tgz#247867bc2520050dc343185639a2fd816d8b0684"
+  integrity sha512-osiICRR65PVhfVXbhxrvus+7ZzbaMUMHRNfTs1GJ+4uGDg1HT9PjvKGbLJul9HuaRmrmYNv/3C9ijjM2For7OA==
 
 "@socket.io/component-emitter@~3.1.0":
   version "3.1.0"
