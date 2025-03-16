@@ -1,4 +1,3 @@
-import { Worker } from "worker_threads";
 import { watch } from "chokidar";
 import fs from "fs-extra";
 import open from "open";
@@ -11,6 +10,10 @@ import templates from "./tools/templates.js";
 import { parseConfig } from "./tools/config.js";
 
 import { importFiles } from "./tools/importFiles.js";
+import { Std } from "./tools/std.js";
+import { spawn } from "child_process";
+import path from "path";
+
 
 export { root, argv, importFiles }
 
@@ -45,8 +48,10 @@ export default async (config = {}) => {
     const servers = new Map();
     const rebootBE = async _ => {
         await be.rebuild();
-        be.current = new Worker(("./" + be.distdir + "/index.js").replaceAll("\\", "/"));
-        be.current.on("message", ([serverId, port, autoOpen])=>{
+        be.current = spawn("node", [path.join("./", be.distdir, "/index.js")], { stdio: ["pipe", "pipe", "pipe"] });
+        be.std = new Std(be.current.stdout, be.current.stdin);
+        be.std.on("log", console.log);
+        be.std.on("data", ({serverId, port, autoOpen})=>{
             const knownPort = servers.get(serverId);
             if (knownPort === port) { return; }
             servers.set(serverId, port);
@@ -63,7 +68,7 @@ export default async (config = {}) => {
     ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal => {
         process.on(signal, _ => {
             be.current.once("exit", _ => process.exit(0));
-            be.current.postMessage(["stop"]);
+            be.std.post({type:"cmd", cmd:"stop"});
         });
     });
 
@@ -76,10 +81,10 @@ export default async (config = {}) => {
     const rebootOn = (source, customLog, path, exe, ignored) => {
         const reboot = async _ => {
             const msg = source + " change";
-            const current = be.current;
-            if (current) { current.postMessage(["restart", source]); }
+            const { current, std } = be;
+            if (current) { std.post({type:"cmd", cmd:"restart", source}); }
             try { await exe(); } catch (e) { logred(msg, "failed"); log(e.stack); return; };
-            if (current) { current.postMessage(["refresh", source]); }
+            if (current) { std.post({type:"cmd", cmd:"refresh", source}); }
             customLog(msg + "d");
         }
 

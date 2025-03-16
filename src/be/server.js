@@ -1,20 +1,19 @@
-import { parentPort } from "worker_threads";
-
 import { createServer as createServerHTTP } from "http";
 
 import { Server as IO } from "socket.io";
 import { info } from "../info";
 import EventEmitter from "events";
 import { detect } from "detect-port";
-import { onStop, onRefresh } from ".";
+import { onStop, onRefresh, std, stop, refresh } from ".";
 
 const enumerable = true;
 const _servers = new Map();
 
 onStop(isRestart=>Server.map(s=>s.stop(isRestart)));
-onRefresh(source=>Server.map(s => s.io.emit(info.guid, "refresh", source)));
+onRefresh(source=>Server.map(s => s.io.emit(info.guid, true, source)));
 
 export {
+    std, stop, refresh,
     onStop,
     onRefresh
 }
@@ -52,11 +51,11 @@ export class Server extends EventEmitter {
 
         const restate = _=>{
             
-            _p.port = http.address()?.port;
-            _p.state = _p.port ? "running" : "stopped";
-            if (_p.port) {
-                _p.portLast = _p.port;
-                parentPort?.postMessage([this.id, _p.port, autoOpen]);
+            const port = _p.port = http.address()?.port;
+            _p.state = port ? "running" : "stopped";
+            if (port) {
+                _p.portLast = port;
+                std.post({id:this.id, port, autoOpen});
             }
             this.emit("state", _p.state, _p.port);
         }
@@ -108,13 +107,13 @@ export class Server extends EventEmitter {
         });
     }
 
-    async stop(action = "stop", source = "BE") {
+    async stop(isRestart=false) {
         const _p = _servers.get(this);
         if (_p.stopProcess) { return _p.stopProcess; }
         if (_p.state === "stopped") { return true; }
         if (_p.startProcess) { await _p.startProcess; }
 
-        this.io.emit(info.guid, action, source);
+        this.io.emit(info.guid, isRestart);
         for (const c of _p.clients.values()) { c.destroy(); }
         _p.clients.clear();
         _p.cid = 0;
@@ -132,7 +131,7 @@ export class Server extends EventEmitter {
     }
 
     async restart() {
-        if (!await this.stop("refresh")) { return false; }
+        if (!await this.stop(true)) { return false; }
         return this.start();
     }
 }

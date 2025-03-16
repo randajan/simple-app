@@ -1,6 +1,6 @@
 import Koa from "koa";
 
-import { onRefresh, onStop, Server } from "./server";
+import { std, stop, refresh, onRefresh, onStop, Server } from "./server";
 import { info } from "../info";
 import { importFiles } from "../tools/importFiles";
 
@@ -17,6 +17,7 @@ export const http = server.http;
 export const io = server.io;
 
 export {
+    std, stop, refresh, 
     onStop,
     onRefresh
 }
