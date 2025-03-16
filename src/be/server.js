@@ -4,7 +4,7 @@ import { Server as IO } from "socket.io";
 import { info } from "../info";
 import EventEmitter from "events";
 import { detect } from "detect-port";
-import { onStop, onRefresh, std, stop, refresh } from ".";
+import { onStop, onRefresh, std, Std, stop, refresh } from ".";
 
 const enumerable = true;
 const _servers = new Map();
@@ -13,7 +13,7 @@ onStop(isRestart=>Server.map(s=>s.stop(isRestart)));
 onRefresh(source=>Server.map(s => s.io.emit(info.guid, true, source)));
 
 export {
-    std, stop, refresh,
+    Std, std, stop, refresh,
     onStop,
     onRefresh
 }

@@ -3,6 +3,8 @@ import { Std } from "../tools/std";
 const _beforeStop = new Set();
 const _beforeRefresh = new Set();
 
+export { Std };
+
 export const std = new Std(process.stdin, process.stdout);
 
 export const onStop = (cb)=>{
