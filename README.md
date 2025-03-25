@@ -28,12 +28,12 @@ sapp({
   port:3000,                          //internal port of the main http server (can be array for alternative ports)
   srcdir:"src",                       //directory of source code
   distdir:"dist",                     //directory of build
+  arcdir:"arc",                       //directory for shared code by frontend and backend
   rebuildBuffer:100,                  //delay between src changed and rebuild happend
   external:[],                        //global esbuild external libraries
   plugins:[],                         //global esbuild plugins
   loader:{},                          //global esbuild loader
   info:{},                            //variables accessible via import info from "@randajan/simple-app/info"
-  injects:["index.html"],             //dist/frontend files where info variables will be injected between brackets {{name}}
   be:{                                //backend options
     dir:"backend",                    //backend subdirectory
     format:"esm",                     //backend format
@@ -43,6 +43,8 @@ sapp({
     plugins:[],                       //backend esbuild plugins
     loader:{},                        //backend esbuild loader
     io:{},                            //backend default io config
+    static:"private",                 //backend static content folder name
+    injects:["index.html"],           //backend files where info variables will be injected between brackets {{name}}
     info:{},                          //variables accessible only at backend via import info from "@randajan/simple-app/info"
   },
   fe:{                                //frontend options
@@ -53,7 +55,10 @@ sapp({
     plugins:[],                       //frontend esbuild plugins
     loader:{},                        //frontend esbuild loader
     io:{},                            //frontend default io config
+    static:"public",                  //frontend static content folder name
+    injects:["index.html"],           //frontend files where info variables will be injected between brackets {{name}}
     info:{},                          //variables accessible only at frontend via import info from "@randajan/simple-app/info"
+    
   }
 })
 

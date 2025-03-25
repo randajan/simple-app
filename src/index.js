@@ -4,7 +4,6 @@ import open from "open";
 
 import { root } from "./tools/consts.js";
 import { argv } from "./tools/argv.js";
-import { fileInjector } from "./tools/uni.js";
 
 import templates from "./tools/templates.js";
 import { parseConfig } from "./tools/config.js";
@@ -19,41 +18,29 @@ import { StdIO } from "@randajan/std-io";
 export { root, argv, importFiles }
 
 export default async (config = {}) => {
-    const { isProd, srcdir, distdir, fe, be, injects, rebuildBuffer, log } = parseConfig(config);
+    const { isProd, srcdir, arcdir, fe, be, rebuildBuffer, log } = parseConfig(config);
     const logbold = log.bold;
     const logred = logbold.red;
     const logmain = log.inverse;
 
-    const injectPublic = fileInjector("{{", "}}");
-
-    const buildPublic = async removeDir => {
-        if (removeDir) { await fs.remove(removeDir); }
-        await fs.copy(srcdir + '/public', fe.distdir);
-        await Promise.all(injects.map(file => injectPublic(fe.distdir + "/" + file, fe.info)));
-    };
-
     if (!fs.existsSync(srcdir)) {
         await Promise.all([
-            fs.outputFile(srcdir + '/public/index.html', templates.index),
-            fs.outputFile(srcdir + "/arc/index.js", templates.arc),
-            fs.outputFile(be.srcdir + "/index.js", templates.be),
-            fs.outputFile(fe.srcdir + "/index.js", templates.fe),
-            fs.outputFile(fe.srcdir + '/index.css', templates.css),
+            fs.outputFile(path.join(fe.staticdir, 'index.html'), templates.index),
+            fs.outputFile(path.join(arcdir, "index.js"), templates.arc),
+            fs.outputFile(path.join(be.srcdir, "index.js"), templates.be),
+            fs.outputFile(path.join(fe.srcdir, "index.js"), templates.fe),
+            fs.outputFile(path.join(fe.srcdir, 'index.css'), templates.css),
         ]);
     }
 
-    await buildPublic(distdir);
-    await be.rebuild();
-    await fe.rebuild();
-
     const servers = new Map();
-    const rebootBE = async _ => {
-        await be.rebuild();
+    const beRebuild = async (rebuildStatic=false, cleanUp=false)=> {
+        await be.rebuild(rebuildStatic, cleanUp);
         be.current = spawn("node", [path.join("./", be.distdir, "/index.js")], { stdio: ["pipe", "pipe", "pipe"] });
         be.std = new StdIO({process:be.current});
         be.std.rx("log", console.log);
         be.std.rx("error", console.error);
-        be.std.rx("http", ({serverId, port, autoOpen})=>{
+        be.std.rx("http", ({id:serverId, port, autoOpen})=>{
             const knownPort = servers.get(serverId);
             if (knownPort === port) { return false; }
             servers.set(serverId, port);
@@ -61,11 +48,6 @@ export default async (config = {}) => {
             if (!isProd && autoOpen) { open(`http://localhost:${port}`); }
             return true;
         });
-    }
-
-    const rebootFE = async (rebuildPublic = false) => {
-        if (rebuildPublic) { await buildPublic(fe.dist); }
-        await fe.rebuild();
     }
 
     ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal => {
@@ -77,7 +59,7 @@ export default async (config = {}) => {
 
     logbold.inverse(`Initialized environment`);
 
-    await rebootBE();
+    await Promise.all([ beRebuild(true, true), fe.rebuild(true, true) ]);
 
     if (isProd) { return; }
 
@@ -98,10 +80,27 @@ export default async (config = {}) => {
         });
     }
 
-    rebootOn(false, "Public", logbold.magenta, srcdir + '/public/**/*', _ => rebootFE(true));
-    rebootOn(true, "Arc", logbold.cyan, srcdir + '/arc/**/*', _ => Promise.all([rebootBE(), rebootFE()]));
-    rebootOn(false, "CSS", logbold.yellow, [fe.srcdir + '/**/*.css', fe.srcdir + '/**/*.scss'], _ => rebootFE());
-    rebootOn(false, "FE", logbold.green, fe.srcdir + '/**/*', _ => rebootFE(), /(\.s?css)$/);
-    rebootOn(true, "BE", logbold.blue, be.srcdir + '/**/*', _ => rebootBE());
+    const g = path.join("**", "*");
+    const feg = path.join(fe.srcdir, g);
 
+    if (fs.existsSync(be.srcdir)) {
+        rebootOn(true, "BE", logbold.blue, path.join(be.srcdir, g), _ => beRebuild());
+    }
+
+    if (fs.existsSync(be.staticdir)) {
+        rebootOn(true, `BE:${be.static}`, logbold.magenta, path.join(srcdir, be.static, g), _ => beRebuild(true));
+    }
+    
+    if (fs.existsSync(arcdir)) {
+        rebootOn(true, "Arc", logbold.cyan, path.join(arcdir, g), _ => Promise.all([beRebuild(), fe.rebuild()]));
+    }
+
+    if (fs.existsSync(fe.srcdir)) {
+        rebootOn(false, "FE", logbold.green, feg, _ => fe.rebuild(), /(\.s?css)$/);
+        rebootOn(false, "CSS", logbold.yellow, [feg + '.css', feg + '.scss'], _ => fe.rebuild());
+    }
+
+    if (fs.existsSync(fe.staticdir)) {
+        rebootOn(false, `FE:${fe.static}`, logbold.magenta, path.join(srcdir, fe.static, g), _ => fe.rebuild(true));
+    }
 }

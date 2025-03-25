@@ -26,7 +26,7 @@ import info from "@randajan/simple-app/info";
 export default _=>"hello world "+JSON.stringify(info, null, 2);
 `,
     be:`
-import be, { express, app, http, io, info } from "@randajan/simple-app/be/express";
+import be, { express, app, http, info } from "@randajan/simple-app/be/express";
 import helloworld from "../arc";
 
 app.use("/", express.static(info.dir.fe));
