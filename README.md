@@ -24,11 +24,12 @@ import sapp from "@randajan/simple-app";
 //those values are default values
 
 sapp({
-  isProd:false,                       //false = start dev server; true = generate minify build and start prod server
-  port:3000,                          //internal port of the main http server (can be array for alternative ports)
-  srcdir:"src",                       //directory of source code
+  isBuild:false,                      //false = start dev server; true = generate minify build
   distdir:"dist",                     //directory of build
+  demodir:"demo",                     //directory of dev server
+  srcdir:"src",                       //directory of source code
   arcdir:"arc",                       //directory for shared code by frontend and backend
+  envdir:"env",                       //directory for all env files
   rebuildBuffer:100,                  //delay between src changed and rebuild happend
   external:[],                        //global esbuild external libraries
   plugins:[],                         //global esbuild plugins
@@ -37,14 +38,14 @@ sapp({
   be:{                                //backend options
     dir:"backend",                    //backend subdirectory
     format:"esm",                     //backend format
-    minify:isProd,                    //backend minify - true = generate minify build; if null then isProd 
+    minify:isBuild,                   //backend minify - true = generate minify build; if null then isProd 
     entries:["index.js"],             //backend entry files
     external:[],                      //backend esbuild external libraries
     plugins:[],                       //backend esbuild plugins
     loader:{},                        //backend esbuild loader
     io:{},                            //backend default io config
     static:"private",                 //backend static content folder name
-    injects:["index.html"],           //backend files where info variables will be injected between brackets {{name}}
+    injects:[],                       //backend files where info variables will be injected between brackets {{name}}
     info:{},                          //variables accessible only at backend via import info from "@randajan/simple-app/info"
   },
   fe:{                                //frontend options
@@ -70,16 +71,16 @@ After run will be generated necessary file structure.
 
 ```javascript
 ...
-    "app-root-path": "^3.0.0",
-    "chalk": "^5.2.0",
-    "chokidar": "^3.5.3",
-    "esbuild": "^0.14.28",
-    "esbuild-node-externals": "^1.7.0",
-    "express": "^4.17.3",
-    "fs-extra": "^10.0.0",
-    "open": "^8.4.0",
-    "socket.io": "^4.4.1",
-    "socket.io-client": "^4.4.1"
+    "@randajan/std-io": "^1.0.2",
+    "chalk": "^5.3.0",
+    "chokidar": "^3.6.0",
+    "detect-port": "^2.1.0",
+    "esbuild": "^0.25.1",
+    "esbuild-node-externals": "^1.18.0",
+    "fs-extra": "^11.2.0",
+    "open": "^10.1.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5"
 ...
 ```
 
@@ -90,7 +91,13 @@ Prepared servers:
 - @randajan/simple-app/be/koa
 
 Or you can implement your own 
+- @randajan/simple-app/be/server
+
+Or you can use it even without http server at all
 - @randajan/simple-app/be
+
+### Env
+
 
 Happy hacking
 

@@ -1,7 +1,7 @@
 import { createServer as createServerHTTP } from "http";
 
 import { Server as IO } from "socket.io";
-import { info } from "../info";
+import { info } from "../uni/info.js";
 import EventEmitter from "events";
 import { detect } from "detect-port";
 import { onStop, onRestart, std, stop, restart } from ".";
@@ -55,7 +55,7 @@ export class Server extends EventEmitter {
             _p.state = port ? "running" : "stopped";
             if (port) {
                 _p.portLast = port;
-                std.tx("http", {id:this.id, port, autoOpen});
+                if (!info.isBuild) { std.tx("http", {id:this.id, port, autoOpen}); }
             }
             this.emit("state", _p.state, _p.port);
         }

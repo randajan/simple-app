@@ -2,10 +2,9 @@ import { builtinModules } from "module";
 import esbuild from 'esbuild';
 import fs from "fs-extra";
 
-import { env, externalsPlugin, log, pkg, root } from "./consts";
-import { parseEnvs } from "./envs";
+import { externalsPlugin, log, pkg } from "./consts";
 import path from "path";
-import { fileInjector } from "./uni";
+import { fileInjector } from "../uni/inject";
 
 
 const buildFactory = (c) => {
@@ -50,15 +49,14 @@ const buildFactory = (c) => {
 }
 
 export const parseConfig = (config = {}) => {
-    const c = parseEnvs(config);
+    const c = config || {};
 
     const guid = Array(16).fill().map(_ => Math.random().toString(36).slice(2)).join('');
 
     const { name, description, version, author } = pkg;
-    const isProd = c.isProd = (c.isProd ? true : false);
-    const ports = Array.isArray(c.port) ? c.port : [c.port || 3000];
+    const isBuild = c.isBuild = (c.isBuild ? true : false);
 
-    const info = { ...(c.info ? c.info : {}), isProd, env, name, description, version, author, guid };
+    const info = { ...(c.info ? c.info : {}), isBuild, name, description, version, author, guid };
     const rebuildBuffer = Math.max(0, Number(c.rebuildBuffer) || 100);
     const external = c.external || [];
     const plugins = c.plugins || [];
@@ -66,12 +64,12 @@ export const parseConfig = (config = {}) => {
     const jsx = c.jsx || {};
 
     const srcdir = c.srcdir || "src";
-    const distdir = c.distdir || "dist";
+    const distdir = isBuild ? (c.distdir || "dist") : (c.demodir || "demo");
     const arcdir = path.join(srcdir, c.arcdir || "arc");
 
-    const fe = c.fe || {};
-    const be = c.be || {};
+    if (c.injects) { log.red("Property 'config.injects' is deprecated please use 'config.fe.injects' or 'config.be.injects'") }
 
+    const fe = c.fe || {};
     fe.dir = fe.dir || "frontend";
     fe.distdir = path.join(distdir, fe.dir);
     fe.static = fe.static || "public";
@@ -79,24 +77,25 @@ export const parseConfig = (config = {}) => {
     fe.format = "iife";
     fe.splitting = false;
     fe.injects = fe.injects || c.injects || ["index.html"];
-    if (c.injects) { log.red("Property 'config.injects' is deprecated please use 'config.fe.injects' or 'config.be.injects'") }
-    
 
+    const be = c.be || {};
     be.dir = be.dir || "backend";
     be.distdir = path.join(distdir, be.dir);
     be.static = be.static || "private";
-    be.info = { ...(be.info || {}), ...info, ports, dir: { root, dist: distdir, fe: fe.distdir, be: be.distdir } };
+    be.info = { ...(be.info || {}), ...info, dir:{ root:path.relative(be.dir, '.'), fe:path.relative(be.dir, fe.dir) } };
     be.format = (be.format || "esm");
     be.splitting = (be.format === "esm");
     be.injects = be.injects || [];
     be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk", "detect-port"];
     be.plugins = [...(be.plugins || []), externalsPlugin];
+    
+    
 
     for (const x of [fe, be]) {
         x.srcdir = path.join(srcdir, x.dir);
         x.staticdir = path.join(srcdir, x.static);
         x.entries = (x.entries || ["index.js"]).map(e => path.join(x.srcdir, e));
-        x.minify = x.minify != null ? x.minify : isProd;
+        x.minify = x.minify != null ? x.minify : isBuild;
         x.external = [...(x.external || []), ...external];
         x.plugins = [...(x.plugins || []), ...plugins];
         x.loader = { ...(x.loader || {}), ...loader };
@@ -105,6 +104,6 @@ export const parseConfig = (config = {}) => {
         x.rebuild = buildFactory(x);
     }
 
-    return { isProd, srcdir, distdir, arcdir, fe, be, rebuildBuffer, log }
+    return { isBuild, distdir, srcdir, arcdir, fe, be, rebuildBuffer, log }
 
 }

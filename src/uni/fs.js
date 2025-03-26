@@ -16,3 +16,5 @@ export const importFiles = (files, opt={})=>{
 
     return r;
 }
+
+export default importFiles;

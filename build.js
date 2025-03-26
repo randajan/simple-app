@@ -8,13 +8,25 @@ await fs.remove("dist");
 
 await build({
     outdir:"dist",
-    splitting: false,
+    splitting: true,
     format: 'esm',
     color:true,
     bundle:true,
     sourcemap:true,
     minify:false,
-    entryPoints: ["src/index.js", "src/be/index.js", "src/be/server.js", "src/be/express.js", "src/be/koa.js", "src/fe/index.js", "src/info/index.js", "src/info/log.js"],
+    entryPoints: [
+        "src/index.js",
+        "src/be/index.js",
+        "src/be/server.js",
+        "src/be/express.js",
+        "src/be/koa.js",
+        "src/fe/index.js",
+        "src/uni/info.js",
+        "src/uni/env.js",
+        "src/uni/argv.js",
+        "src/uni/log.js",
+        "src/uni/fs.js"
+    ],
     plugins:[nodeExternalsPlugin()],
     external:builtinModules,
 });

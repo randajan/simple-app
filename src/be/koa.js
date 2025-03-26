@@ -1,8 +1,7 @@
 import Koa from "koa";
 
 import { std, stop, restart, onRestart, onStop, Server } from "./server";
-import { info } from "../info";
-import { importFiles } from "../tools/importFiles";
+import { info } from "../uni/info.js";
 
 export const app = new Koa();
 
@@ -12,14 +11,12 @@ Object.defineProperty(server, "app", { value:app });
 
 export default server;
 
-export { Server, importFiles, info }
 export const http = server.http;
 export const io = server.io;
 
 export {
+    Server, info,
     std, stop, restart, 
     onStop,
     onRestart
 }
-
-server.start(...info.ports);

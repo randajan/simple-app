@@ -1,8 +1,7 @@
 
 import socketIOClient from "socket.io-client";
 
-import { info } from "../info";
-import { importFiles } from "../tools/importFiles";
+import { info } from "../uni/info.js";
 
 const socket = socketIOClient(window.location.host, __sapp_io_config);
 
@@ -20,15 +19,12 @@ socket.on(info.guid, (isRestart, source)=>{
     }
 });
 
-const enumerable = true;
-export default Object.defineProperties({}, {
-    socket:{enumerable, value:socket},
-    info:{enumerable, value:info},
-    importFiles:{enumerable, value:importFiles}
+export default Object.freeze({
+    socket,
+    info,
 });
 
 export {
     socket,
     info,
-    importFiles
 }

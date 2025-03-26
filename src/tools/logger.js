@@ -12,7 +12,7 @@ const loggerFactory = (formater, chalkInstance = chalkNative) => {
 export const createLogger = formater=>loggerFactory(formater);
 
 export const mainLogger = (...prefixes)=>{
-    const now = _=>(new Date()).toLocaleTimeString("cs-CZ");
+    const now = _=>(new Date()).toLocaleTimeString();
     prefixes = prefixes.filter(v=>!!v).join(" ");
 
     return createLogger(msgs=>`${prefixes} | ${now()} | ${msgs.join(" ")}`);

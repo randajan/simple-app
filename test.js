@@ -1,6 +1,14 @@
 import sapp from "./dist/index.js";
+import argv from "./dist/uni/argv.js";
+import parseEnvs from "./dist/uni/env.js";
+
+const { isBuild } = argv;
+
+console.log(parseEnvs("dev"));
 
 sapp({
+    isBuild,
+    demodir:"test/demo",
     distdir:"test/dist",
     srcdir:"test/src",
     info:{

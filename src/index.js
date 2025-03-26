@@ -1,54 +1,62 @@
 import { watch } from "chokidar";
-import fs from "fs-extra";
+import fse from "fs-extra";
 import open from "open";
-
-import { root } from "./tools/consts.js";
-import { argv } from "./tools/argv.js";
 
 import templates from "./tools/templates.js";
 import { parseConfig } from "./tools/config.js";
 
-import { importFiles } from "./tools/importFiles.js";
 import { spawn } from "child_process";
 import path from "path";
 import { StdIO } from "@randajan/std-io";
 
-
-
-export { root, argv, importFiles }
-
 export default async (config = {}) => {
-    const { isProd, srcdir, arcdir, fe, be, rebuildBuffer, log } = parseConfig(config);
+    const { isBuild, distdir, srcdir, arcdir, fe, be, rebuildBuffer, log } = parseConfig(config);
     const logbold = log.bold;
     const logred = logbold.red;
     const logmain = log.inverse;
 
-    if (!fs.existsSync(srcdir)) {
+    
+    if (!fse.existsSync(srcdir)) {
         await Promise.all([
-            fs.outputFile(path.join(fe.staticdir, 'index.html'), templates.index),
-            fs.outputFile(path.join(arcdir, "index.js"), templates.arc),
-            fs.outputFile(path.join(be.srcdir, "index.js"), templates.be),
-            fs.outputFile(path.join(fe.srcdir, "index.js"), templates.fe),
-            fs.outputFile(path.join(fe.srcdir, 'index.css'), templates.css),
+            fse.outputFile(path.join(fe.staticdir, 'index.html'), templates.index),
+            fse.outputFile(path.join(arcdir, "index.js"), templates.arc),
+            fse.outputFile(path.join(be.srcdir, "index.js"), templates.be),
+            fse.outputFile(path.join(fe.srcdir, "index.js"), templates.fe),
+            fse.outputFile(path.join(fe.srcdir, 'index.css'), templates.css),
         ]);
+    }
+
+    if (isBuild) {
+        logbold.yellow(`Creating production build...`);
+        await Promise.all([be.rebuild(true, true), fe.rebuild(true, true)]);
+        logbold.green(`Succesfully builded ${distdir}`);
+        logbold.blue(`You can run it with 'node ${path.join(be.distdir)}'`);
+        process.exit(0);
     }
 
     const servers = new Map();
     const beRebuild = async (rebuildStatic=false, cleanUp=false)=> {
         await be.rebuild(rebuildStatic, cleanUp);
-        be.current = spawn("node", [path.join("./", be.distdir, "/index.js")], { stdio: ["pipe", "pipe", "pipe"] });
+        be.current = spawn("node", ["./index.js", ...process.argv.slice(2)], {
+            stdio: ["pipe", "pipe", "pipe"],
+            cwd:be.distdir
+        });
         be.std = new StdIO({process:be.current});
         be.std.rx("log", console.log);
-        be.std.rx("error", console.error);
+        be.std.rx("error", err=>console.error(String(err)));
         be.std.rx("http", ({id:serverId, port, autoOpen})=>{
             const knownPort = servers.get(serverId);
             if (knownPort === port) { return false; }
             servers.set(serverId, port);
             logmain(`Server id '${serverId}'`, `${knownPort ? "re" : ""}started at port '${port}'`);
-            if (!isProd && autoOpen) { open(`http://localhost:${port}`); }
+            if (autoOpen) { open(`http://localhost:${port}`); }
             return true;
         });
     }
+
+    logmain(`Initializing development environment...`);
+    await Promise.all([beRebuild(true, true), fe.rebuild(true, true)]);
+    
 
     ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal => {
         process.on(signal, _ => {
@@ -56,12 +64,6 @@ export default async (config = {}) => {
             be.std.tx("cmd", {cmd:"stop"});
         });
     });
-
-    logbold.inverse(`Initialized environment`);
-
-    await Promise.all([ beRebuild(true, true), fe.rebuild(true, true) ]);
-
-    if (isProd) { return; }
 
     const rebootOn = (before, source, customLog, path, exe, ignored) => {
         const reboot = async _ => {
@@ -83,24 +85,24 @@ export default async (config = {}) => {
     const g = path.join("**", "*");
     const feg = path.join(fe.srcdir, g);
 
-    if (fs.existsSync(be.srcdir)) {
+    if (fse.existsSync(be.srcdir)) {
         rebootOn(true, "BE", logbold.blue, path.join(be.srcdir, g), _ => beRebuild());
     }
 
-    if (fs.existsSync(be.staticdir)) {
-        rebootOn(true, `BE:${be.static}`, logbold.magenta, path.join(srcdir, be.static, g), _ => beRebuild(true));
+    if (fse.existsSync(be.staticdir)) {
+        rebootOn(true, `Private`, logbold.magenta, path.join(be.staticdir, g), _ => beRebuild(true));
     }
     
-    if (fs.existsSync(arcdir)) {
+    if (fse.existsSync(arcdir)) {
         rebootOn(true, "Arc", logbold.cyan, path.join(arcdir, g), _ => Promise.all([beRebuild(), fe.rebuild()]));
     }
 
-    if (fs.existsSync(fe.srcdir)) {
+    if (fse.existsSync(fe.srcdir)) {
         rebootOn(false, "FE", logbold.green, feg, _ => fe.rebuild(), /(\.s?css)$/);
         rebootOn(false, "CSS", logbold.yellow, [feg + '.css', feg + '.scss'], _ => fe.rebuild());
     }
 
-    if (fs.existsSync(fe.staticdir)) {
-        rebootOn(false, `FE:${fe.static}`, logbold.magenta, path.join(srcdir, fe.static, g), _ => fe.rebuild(true));
+    if (fse.existsSync(fe.staticdir)) {
+        rebootOn(false, `Public`, logbold.magenta, path.join(fe.staticdir, g), _ => fe.rebuild(true));
     }
 }
