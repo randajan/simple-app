@@ -81,6 +81,6 @@ export const parseConfig = (config = {}) => {
         }
     }
 
-    return { isBuild, distdir, srcdir, arcdir, fe, be, env:c.env, rebuildBuffer, log }
+    return { isBuild, distdir, srcdir, arcdir, fe, be, env:c.env, rebuildBuffer }
 
 }

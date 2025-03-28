@@ -5,14 +5,18 @@ import open from "open";
 
 import templates from "./tools/templates.js";
 import { parseConfig } from "./tools/config.js";
+import { log, pkg } from "./tools/consts.js";
 
 import { spawn } from "child_process";
 import path from "path";
 import { StdIO } from "@randajan/std-io";
 
 
+export { log, pkg }
+
+
 export default async (config = {}) => {
-    const { isBuild, distdir, srcdir, arcdir, fe, be, env, rebuildBuffer, log } = parseConfig(config);
+    const { isBuild, distdir, srcdir, arcdir, fe, be, env, rebuildBuffer } = parseConfig(config);
     const logbold = log.bold;
     const logred = logbold.red;
     const logmain = log.inverse;
