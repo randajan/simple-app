@@ -1,14 +1,10 @@
-import { builtinModules } from "module";
-
-import { externalsPlugin, log, pkg } from "./consts";
+import { log, pkg } from "./consts";
 import path from "path";
 import { buildFactory } from "./buildFactory";
 import { envFileName, parseEnvs } from "../uni/env";
 import fse from "fs-extra";
 import { mergeArr } from "./uni";
-
-
-
+import { exBuiltin, exDeps, exPlugin } from "./externals";
 
 export const parseConfig = (config = {}) => {
     const c = config || {};
@@ -50,9 +46,12 @@ export const parseConfig = (config = {}) => {
     be.injects = be.injects || [];
     be.plugins = mergeArr(be.plugins, c.plugins);
 
-    if (!be.external) { be.plugins.unshift(externalsPlugin); }
-    be.external = mergeArr(be.external, builtinModules, builtinModules.map(m => `node:${m}`));
-    //"koa", "express", "socket.io", "chalk"
+    if (be.external) {
+        be.external = mergeArr(be.external, exBuiltin);
+    } else {
+        be.plugins.unshift(exPlugin);
+        be.external = mergeArr(exDeps, exBuiltin);
+    }
     
     for (const x of [fe, be]) {
         x.srcdir = path.join(srcdir, x.dir);
