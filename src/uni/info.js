@@ -26,8 +26,8 @@ const relativeDir = o=>{
     if (typeof o !== "object") { return o; }
     const d = o.dir;
 
-    const cfd = getDirname();
-    if (!cfd) { return o; }
+    let cfd = getDirname();
+    if (!cfd) { try { cfd = __dirname; } catch { return o; } }
 
     const { root, fe } = d;
 

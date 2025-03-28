@@ -43,7 +43,7 @@ export const parseConfig = (config = {}) => {
     be.dir = be.dir || "backend";
     be.distdir = path.join(distdir, be.dir);
     be.static = be.static || "private";
-    be.info = { ...(be.info || {}), ...info, dir:{ root:path.relative(be.dir, '.'), fe:path.relative(be.dir, fe.dir) } };
+    be.info = { ...(be.info || {}), ...info, dir:{ root:path.relative(be.dir, '.'), be:".", fe:path.relative(be.dir, fe.dir) } };
     be.format = (be.format || "esm");
     be.splitting = (be.format === "esm");
     be.injects = be.injects || [];
