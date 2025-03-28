@@ -1,4 +1,5 @@
 import { watch } from "chokidar";
+import esbuild from 'esbuild';
 import fse from "fs-extra";
 import open from "open";
 
@@ -8,6 +9,7 @@ import { parseConfig } from "./tools/config.js";
 import { spawn } from "child_process";
 import path from "path";
 import { StdIO } from "@randajan/std-io";
+
 
 export default async (config = {}) => {
     const { isBuild, distdir, srcdir, arcdir, fe, be, env, rebuildBuffer, log } = parseConfig(config);
@@ -31,7 +33,9 @@ export default async (config = {}) => {
         await Promise.all([be.rebuild(true, true, true), fe.rebuild(true, true)]);
         logbold.green(`Succesfully builded ${distdir}`);
         logbold.blue(`You can run it with 'node ${path.join(be.distdir)}'`);
-        process.exit(0);
+        
+        esbuild.stop();
+        return;
     }
 
     const servers = new Map();
@@ -50,7 +54,7 @@ export default async (config = {}) => {
             if (knownPort === port) { return false; }
             servers.set(serverId, port);
             logmain(`Server id '${serverId}'`, `${knownPort ? "re" : ""}started at port '${port}'`);
-            if (autoOpen) { open(`http://localhost:${port}`); }
+            if (autoOpen) { open(`http://localhost:${port}`); }ˇ
             return true;
         });
     }
