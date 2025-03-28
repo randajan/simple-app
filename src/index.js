@@ -93,7 +93,7 @@ export default async (config = {}) => {
         rebootOn(true, "BE", logbold.blueBright, path.join(be.srcdir, g), _ => beRebuild());
     }
 
-    if (fse.existsSync(env.src)) {
+    if (env?.src && fse.existsSync(env.src)) {
         rebootOn(true, "Env", logbold.magenta, env.src, _ => beRebuild(false, false, true));
     }
 
