@@ -11,7 +11,7 @@ export const importFiles = (files, opt={})=>{
         if (suffix && !pathname.endsWith(suffix)) { return; }
         const name = pathname.slice(prefix.length, pathname.length-suffix.length);
         const exports = files.default[i];
-        r[name] = trait(name, exports);
+        r[name] = trait(exports, name);
     });
 
     return r;

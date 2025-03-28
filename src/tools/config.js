@@ -1,52 +1,13 @@
 import { builtinModules } from "module";
-import esbuild from 'esbuild';
-import fs from "fs-extra";
 
 import { externalsPlugin, log, pkg } from "./consts";
 import path from "path";
-import { fileInjector } from "../uni/inject";
+import { buildFactory } from "./buildFactory";
+import { envFileName, parseEnvs } from "../uni/env";
+import fse from "fs-extra";
 
 
-const buildFactory = (c) => {
-    const { minify, splitting, external, plugins, loader, jsx, format } = c;
-    let context; //cache esbuild
 
-    const inject = fileInjector("{{", "}}");
-
-    return async (rebuildStatic = false, cleanUp = false) => {
-        if (!context && fs.existsSync(c.srcdir)) {
-            context = await esbuild.context({
-                format,
-                minify,
-                color: true,
-                bundle: true,
-                sourcemap: true,
-                logLevel: 'error',
-                entryPoints: c.entries,
-                outdir: c.distdir,
-                define: { __sapp_info: JSON.stringify(c.info), __sapp_io_config: JSON.stringify(c.io) },
-                splitting,
-                external,
-                plugins,
-                loader,
-                jsx: jsx.transform,
-                jsxDev: jsx.dev,
-                jsxFactory: jsx.factory,
-                jsxFragment: jsx.fragment || jsx.factory,
-                jsxImportSource: jsx.importSource
-            });
-        }
-
-        if (rebuildStatic && cleanUp) { await fs.remove(c.distdir); }
-        if (rebuildStatic && fs.existsSync(c.staticdir)) {
-            await fs.copy(c.staticdir, c.distdir);
-            await Promise.all(c.injects.map(f => inject(path.join(c.distdir, f), c.info)));
-        }
-
-        await context?.rebuild();
-    }
-
-}
 
 export const parseConfig = (config = {}) => {
     const c = config || {};
@@ -89,8 +50,6 @@ export const parseConfig = (config = {}) => {
     be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk", "detect-port"];
     be.plugins = [...(be.plugins || []), externalsPlugin];
     
-    
-
     for (const x of [fe, be]) {
         x.srcdir = path.join(srcdir, x.dir);
         x.staticdir = path.join(srcdir, x.static);
@@ -104,6 +63,23 @@ export const parseConfig = (config = {}) => {
         x.rebuild = buildFactory(x);
     }
 
-    return { isBuild, distdir, srcdir, arcdir, fe, be, rebuildBuffer, log }
+    if (c.env) {
+        const e = c.env;
+        e.srcdir = path.join(srcdir, e.dir || "env");
+        e.distdir = distdir;
+        e.src = path.join(e.srcdir, envFileName(e.name));
+        e.dist = path.join(e.distdir, ".env.json")
+
+        let rebuild = be.rebuild;
+        be.rebuild = async (rebuildStatic, cleanUp, rebuildEnv)=>{
+            if (!rebuildEnv) { return rebuild(rebuildStatic, cleanUp); }
+            const { sample:{ data, flat } } = parseEnvs(e.name, e.srcdir, true);
+            if (!isBuild) { await fse.copyFile(e.src, e.dist); }
+            rebuild = buildFactory(be, { data, flat });
+            return rebuild(rebuildStatic, cleanUp);
+        }
+    }
+
+    return { isBuild, distdir, srcdir, arcdir, fe, be, env:c.env, rebuildBuffer, log }
 
 }

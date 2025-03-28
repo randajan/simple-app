@@ -1,10 +1,12 @@
 import { createServer as createServerHTTP } from "http";
 
 import { Server as IO } from "socket.io";
+import { defs } from "../uni/_defs.js";
 import { info } from "../uni/info.js";
 import EventEmitter from "events";
 import { detect } from "detect-port";
 import { onStop, onRestart, std, stop, restart } from ".";
+
 
 const enumerable = true;
 const _servers = new Map();
@@ -47,7 +49,7 @@ export class Server extends EventEmitter {
         _servers.set(this, _p);
 
         const http = createServerHTTP(requestListener);
-        const io = new IO(http, __sapp_io_config);
+        const io = new IO(http, defs?.io);
 
         const restate = _=>{
             

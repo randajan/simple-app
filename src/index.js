@@ -10,7 +10,7 @@ import path from "path";
 import { StdIO } from "@randajan/std-io";
 
 export default async (config = {}) => {
-    const { isBuild, distdir, srcdir, arcdir, fe, be, rebuildBuffer, log } = parseConfig(config);
+    const { isBuild, distdir, srcdir, arcdir, fe, be, env, rebuildBuffer, log } = parseConfig(config);
     const logbold = log.bold;
     const logred = logbold.red;
     const logmain = log.inverse;
@@ -28,22 +28,23 @@ export default async (config = {}) => {
 
     if (isBuild) {
         logbold.yellow(`Creating production build...`);
-        await Promise.all([be.rebuild(true, true), fe.rebuild(true, true)]);
+        await Promise.all([be.rebuild(true, true, true), fe.rebuild(true, true)]);
         logbold.green(`Succesfully builded ${distdir}`);
         logbold.blue(`You can run it with 'node ${path.join(be.distdir)}'`);
         process.exit(0);
     }
 
     const servers = new Map();
-    const beRebuild = async (rebuildStatic=false, cleanUp=false)=> {
-        await be.rebuild(rebuildStatic, cleanUp);
+    const beRebuild = async (rebuildStatic=false, cleanUp=false, rebuildEnv=false)=> {
+
+        await be.rebuild(rebuildStatic, cleanUp, rebuildEnv);
         be.current = spawn("node", ["./index.js", ...process.argv.slice(2)], {
             stdio: ["pipe", "pipe", "pipe"],
             cwd:be.distdir
         });
         be.std = new StdIO({process:be.current});
         be.std.rx("log", console.log);
-        be.std.rx("error", err=>console.error(String(err)));
+        be.std.rx("error", err=>console.error(err));
         be.std.rx("http", ({id:serverId, port, autoOpen})=>{
             const knownPort = servers.get(serverId);
             if (knownPort === port) { return false; }
@@ -55,13 +56,16 @@ export default async (config = {}) => {
     }
 
     logmain(`Initializing development environment...`);
-    await Promise.all([beRebuild(true, true), fe.rebuild(true, true)]);
+    await Promise.all([beRebuild(true, true, true), fe.rebuild(true, true)]);
     
 
     ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(signal => {
-        process.on(signal, _ => {
+        process.on(signal, async _ => {
+
             be.current.once("exit", _ => process.exit(0));
-            be.std.tx("cmd", {cmd:"stop"});
+            
+            try { await be.std.tx("cmd", {cmd:"stop"}); }
+            catch { process.exit(0); }
         });
     });
 
@@ -86,11 +90,15 @@ export default async (config = {}) => {
     const feg = path.join(fe.srcdir, g);
 
     if (fse.existsSync(be.srcdir)) {
-        rebootOn(true, "BE", logbold.blue, path.join(be.srcdir, g), _ => beRebuild());
+        rebootOn(true, "BE", logbold.blueBright, path.join(be.srcdir, g), _ => beRebuild());
+    }
+
+    if (fse.existsSync(env.src)) {
+        rebootOn(true, "Env", logbold.magenta, env.src, _ => beRebuild(false, false, true));
     }
 
     if (fse.existsSync(be.staticdir)) {
-        rebootOn(true, `Private`, logbold.magenta, path.join(be.staticdir, g), _ => beRebuild(true));
+        rebootOn(true, `Private`, logbold.blue, path.join(be.staticdir, g), _ => beRebuild(true));
     }
     
     if (fse.existsSync(arcdir)) {
@@ -98,11 +106,11 @@ export default async (config = {}) => {
     }
 
     if (fse.existsSync(fe.srcdir)) {
-        rebootOn(false, "FE", logbold.green, feg, _ => fe.rebuild(), /(\.s?css)$/);
+        rebootOn(false, "FE", logbold.greenBright, feg, _ => fe.rebuild(), /(\.s?css)$/);
         rebootOn(false, "CSS", logbold.yellow, [feg + '.css', feg + '.scss'], _ => fe.rebuild());
     }
 
     if (fse.existsSync(fe.staticdir)) {
-        rebootOn(false, `Public`, logbold.magenta, path.join(fe.staticdir, g), _ => fe.rebuild(true));
+        rebootOn(false, `Public`, logbold.green, path.join(fe.staticdir, g), _ => fe.rebuild(true));
     }
 }

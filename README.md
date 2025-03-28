@@ -29,12 +29,15 @@ sapp({
   demodir:"demo",                     //directory of dev server
   srcdir:"src",                       //directory of source code
   arcdir:"arc",                       //directory for shared code by frontend and backend
-  envdir:"env",                       //directory for all env files
   rebuildBuffer:100,                  //delay between src changed and rebuild happend
   external:[],                        //global esbuild external libraries
   plugins:[],                         //global esbuild plugins
   loader:{},                          //global esbuild loader
   info:{},                            //variables accessible via import info from "@randajan/simple-app/info"
+  env:{                               //optional config for maitained env file
+    name:undefined,                   //env file that will be used (when isBuild=true this is ignored)
+    dir:"env",                        //directory for all used env files
+  }
   be:{                                //backend options
     dir:"backend",                    //backend subdirectory
     format:"esm",                     //backend format
@@ -59,7 +62,6 @@ sapp({
     static:"public",                  //frontend static content folder name
     injects:["index.html"],           //frontend files where info variables will be injected between brackets {{name}}
     info:{},                          //variables accessible only at frontend via import info from "@randajan/simple-app/info"
-    
   }
 })
 

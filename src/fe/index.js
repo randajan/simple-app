@@ -2,8 +2,9 @@
 import socketIOClient from "socket.io-client";
 
 import { info } from "../uni/info.js";
+import defs from "../uni/_defs.js";
 
-const socket = socketIOClient(window.location.host, __sapp_io_config);
+const socket = socketIOClient(window.location.host, defs?.io);
 
 socket.on(info.guid, (isRestart, source)=>{
     if (!isRestart) { window.close(); } 

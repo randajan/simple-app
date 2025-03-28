@@ -1,3 +1,5 @@
+import { defs } from "./_defs";
+
 let slash = "/";
 
 function getDirname() {
@@ -36,11 +38,7 @@ const relativeDir = o=>{
     return o;
 }
 
-let info;
-
-try { info = relativeDir(__sapp_info); } catch {}
-
-export {info};
+export const info = relativeDir(defs?.info);
 export default info;
 
 

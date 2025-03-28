@@ -2,7 +2,9 @@ import path from "path";
 import fse from "fs-extra";
 
 import { fillObj, flatObj, mergeObj } from "../tools/uni";
-import info from "../uni/info";
+import defs from "./_defs";
+import info from "./info";
+import argv from "./argv";
 
 const getTemplate = any=>{
   if (any == null) { return any; }
@@ -11,52 +13,72 @@ const getTemplate = any=>{
   return t;
 }
 
-const ensureJSONSync = (prefix, pathname, defaultContent={}, msgSuffix="")=>{
+const ensureJSONSync = (pathname, defaultContent={}, createMsg="")=>{
   if (fse.existsSync(pathname)) { return fse.readJSONSync(pathname); }
 
-  console.log(`${prefix}Not found '${pathname}'`);
+  console.log(`Env not found '${pathname}' - creating ${createMsg}`);
   fse.outputJSONSync(pathname, defaultContent, { spaces: 4 });
-  console.log(`${prefix}Created '${pathname}' ${msgSuffix}`);
 
   return defaultContent;
 }
 
+export const envFileName = (name)=>`.env${(name ? "." : "") + name}.json`;
+const getMissKeys = (check, against)=>Object.keys(against).filter(k=>!check.hasOwnProperty(k));
 
-export const parseEnvs = (name, ...mergeWith)=>{
 
-  const root = info?.dir?.root || process.cwd();
-  const prefix = `ENV:${name} - `;
-
-  const tempPath = path.join(root,  `sample.env.json`);
-  const envsPath = path.join(root, `.env.${name}.json`);
-  const temp = ensureJSONSync(prefix, tempPath, {});
-  const envs = ensureJSONSync(prefix, envsPath, temp, "from template");
-
-  const tempFlat = flatObj(temp);
-  const envsFlat = flatObj(envs);
-
-  const tempMissing = Object.keys(envsFlat).filter(k=>!tempFlat.hasOwnProperty(k));
-  const envsMissing = Object.keys(tempFlat).filter(k=>!envsFlat.hasOwnProperty(k));
-
-  const result = mergeObj(envs, ...mergeWith);
-
-  if (!tempMissing.length && !envsMissing.length) { return result; }
-
+/*
   if (info?.isBuild) {
-    const mismatch = [...envsMissing.map(k=>"missing: "+k), ...tempMissing.map(k=>"unknown: "+k)];
-    console.log(`${prefix}${envsPath} configuration mismatch\n  ${mismatch.join("\n  ")}`);
-    throw new Error(`${prefix} configuration mismatch`);
+
   }
+*/
 
-  const updates = [...tempMissing.map(k=>"add: "+k), ...envsMissing.map(k=>"removed: "+k)];
-  for (const key of tempMissing) { fillObj(temp, key, getTemplate(envsFlat[key])); }
-  for (const key of envsMissing) { fillObj(temp, key); }
-
-  console.log(`${prefix}${tempPath} autoupdated \n  ${updates.join("\n  ")}`);
-
-  fse.outputJSONSync(tempPath, temp, { spaces: 4 });
-
-  return result;
+const parseEnv = (dir, filename, defaultContent={}, createMsg="", mergeWith)=>{
+  const pathname = path.join(dir || process.cwd(), filename);
+  const raw = ensureJSONSync(pathname, defaultContent, createMsg);
+  const data = mergeWith ? mergeObj(raw, mergeWith) : raw;
+  const flat = flatObj(data);
+  return {pathname, data, flat};
 }
 
-export default parseEnvs;
+
+export const parseEnvs = (name, dir, verbose=false)=>{
+
+  const s = parseEnv(dir, `sample.env.json`, {});
+  const e = parseEnv(dir, envFileName(name), s.data, "from sample");
+
+  s.miss = getMissKeys(s.flat, e.flat);
+  e.miss = getMissKeys(e.flat, s.flat);
+
+  if (s.miss.length || e.miss.length) {
+    const updates = [...s.miss.map(k=>"add: "+k), ...e.miss.map(k=>"removed: "+k)];
+    for (const key of s.miss) { fillObj(s.data, key, getTemplate(e.flat[key])); }
+    for (const key of e.miss) { fillObj(s.data, key); }
+
+    console.log(`Env sample autoupdate \n  ${updates.join("\n  ")}`);
+    fse.outputJSONSync(s.pathname, s.data, { spaces: 4 });
+  }
+
+  return verbose ? { sample:s, env:e } : e.data;
+}
+
+let env;
+
+if (info?.dir && defs?.env) {
+  const s = defs.env;
+  const e = parseEnv(info.dir.root, ".env.json", s.data, "from sample", argv);
+  
+  if (info.isBuild) {
+    s.miss = getMissKeys(s.flat, e.flat);
+    e.miss = getMissKeys(e.flat, s.flat);
+  
+    if (s.miss.length || e.miss.length) {
+      const mismatch = [...e.miss.map(k=>"missing: "+k), ...s.miss.map(k=>"unknown: "+k)];
+      console.error(`Env configuration mismatch\n  ${mismatch.join("\n  ")}`);
+      process.exit(0);
+    }
+  }
+
+  env = e.data;
+}
+
+export default env;
