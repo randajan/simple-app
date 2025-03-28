@@ -22,7 +22,7 @@ const ensureJSONSync = (pathname, defaultContent={}, createMsg="")=>{
   return defaultContent;
 }
 
-export const envFileName = (name)=>`.env${(name ? "." : "") + name}.json`;
+export const envFileName = (name)=>`.env${name ? ("." + name) : ""}.json`;
 const getMissKeys = (check, against)=>Object.keys(against).filter(k=>!check.hasOwnProperty(k));
 
 
