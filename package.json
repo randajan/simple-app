@@ -16,9 +16,9 @@
     "./info": "./dist/uni/info.js",
     "./log": "./dist/uni/log.js",
     "./env": "./dist/uni/env.js",
-    "./argv": "./dist/uni/fs.js",
+    "./argv": "./dist/uni/argv.js",
     "./fs": "./dist/uni/fs.js",
-    "./inject": "./dist/uni/fs.js"
+    "./inject": "./dist/uni/inject.js"
   },
   "license": "MIT",
   "scripts": {
