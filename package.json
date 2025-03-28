@@ -4,21 +4,57 @@
   "description": "Supersimple start for developing full stack (express + frontend) app with node.js",
   "repository": "randajan/simple-lib",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.mjs",
   "exports": {
-    ".": "./dist/index.js",
-    "./be": "./dist/be/index.js",
-    "./be/server": "./dist/be/server.js",
-    "./be/express": "./dist/be/express.js",
-    "./be/koa": "./dist/be/koa.js",
-    "./fe": "./dist/fe/index.js",
-    "./info": "./dist/uni/info.js",
-    "./log": "./dist/uni/log.js",
-    "./env": "./dist/uni/env.js",
-    "./argv": "./dist/uni/argv.js",
-    "./fs": "./dist/uni/fs.js",
-    "./inject": "./dist/uni/inject.js"
+    ".": {
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.cjs"
+    },
+    "./be": {
+      "import": "./dist/esm/be/index.mjs",
+      "require": "./dist/cjs/be/index.cjs"
+    },
+    "./be/server": {
+      "import": "./dist/esm/be/server.mjs",
+      "require": "./dist/cjs/be/server.cjs"
+    },
+    "./be/express": {
+      "import": "./dist/esm/be/express.mjs",
+      "require": "./dist/cjs/be/express.cjs"
+    },
+    "./be/koa": {
+      "import": "./dist/esm/be/koa.mjs",
+      "require": "./dist/cjs/be/koa.cjs"
+    },
+    "./fe": {
+      "import": "./dist/esm/fe/index.mjs",
+      "require": "./dist/cjs/fe/index.cjs"
+    },
+    "./info": {
+      "import": "./dist/esm/uni/info.mjs",
+      "require": "./dist/cjs/uni/info.cjs"
+    },
+    "./log": {
+      "import": "./dist/esm/uni/log.mjs",
+      "require": "./dist/cjs/uni/log.cjs"
+    },
+    "./env": {
+      "import": "./dist/esm/uni/env.mjs",
+      "require": "./dist/cjs/uni/env.cjs"
+    },
+    "./argv": {
+      "import": "./dist/esm/uni/argv.mjs",
+      "require": "./dist/cjs/uni/argv.cjs"
+    },
+    "./fs": {
+      "import": "./dist/esm/uni/fs.mjs",
+      "require": "./dist/cjs/uni/fs.cjs"
+    },
+    "./inject": {
+      "import": "./dist/esm/uni/inject.mjs",
+      "require": "./dist/cjs/uni/inject.cjs"
+    }
   },
   "license": "MIT",
   "scripts": {
@@ -39,6 +75,7 @@
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
+    "@randajan/simple-lib": "^3.0.2",
     "express": "^4.21.2",
     "koa": "^2.16.0",
     "koa-static": "^5.0.0"

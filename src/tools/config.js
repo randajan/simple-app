@@ -50,8 +50,9 @@ export const parseConfig = (config = {}) => {
     be.injects = be.injects || [];
     be.plugins = mergeArr(be.plugins, c.plugins);
 
-    if (!be.external) { be.plugins.push(externalsPlugin); }
+    if (!be.external) { be.plugins.unshift(externalsPlugin); }
     be.external = mergeArr(be.external, builtinModules, builtinModules.map(m => `node:${m}`));
+    //"koa", "express", "socket.io", "chalk"
     
     for (const x of [fe, be]) {
         x.srcdir = path.join(srcdir, x.dir);

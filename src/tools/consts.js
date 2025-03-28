@@ -8,10 +8,10 @@ import path from "path";
 export const pkg = fse.readJSONSync(path.join(process.cwd(), "package.json"));
 
 export const externalsPlugin = nodeExternalsPlugin({
-    allowList: [
-        "fe", "be", "be/server", "be/express", "be/koa",
-        "info", "log", "env", "argv", "fs", "inject"
-    ].map(v => "@randajan/simple-app/" + v)
+    // allowList: [
+    //     "fe", "be", "be/server", "be/express", "be/koa",
+    //     "info", "log", "env", "argv", "fs", "inject"
+    // ].map(v => "@randajan/simple-app/" + v)
 });
 
 export const log = mainLogger(pkg.name, pkg.version);

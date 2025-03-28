@@ -1,5 +1,5 @@
-import sapp from "./dist/index.js";
-import argv from "./dist/uni/argv.js";
+import sapp from "./dist/esm/index.mjs";
+import argv from "./dist/esm/uni/argv.mjs";
 
 const { isBuild } = argv;
 
