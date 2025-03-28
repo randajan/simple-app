@@ -13,7 +13,7 @@
     "./be/express": "./dist/be/express.js",
     "./be/koa": "./dist/be/koa.js",
     "./fe": "./dist/fe/index.js",
-    "./info": "./dist/uni/index.js",
+    "./info": "./dist/uni/info.js",
     "./log": "./dist/uni/log.js",
     "./env": "./dist/uni/env.js",
     "./argv": "./dist/uni/fs.js",
