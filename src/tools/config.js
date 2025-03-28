@@ -5,6 +5,7 @@ import path from "path";
 import { buildFactory } from "./buildFactory";
 import { envFileName, parseEnvs } from "../uni/env";
 import fse from "fs-extra";
+import { mergeArr } from "./uni";
 
 
 
@@ -19,8 +20,6 @@ export const parseConfig = (config = {}) => {
 
     const info = { ...(c.info ? c.info : {}), isBuild, name, description, version, author, guid };
     const rebuildBuffer = Math.max(0, Number(c.rebuildBuffer) || 100);
-    const external = c.external || [];
-    const plugins = c.plugins || [];
     const loader = c.loader || {};
     const jsx = c.jsx || {};
 
@@ -38,6 +37,8 @@ export const parseConfig = (config = {}) => {
     fe.format = "iife";
     fe.splitting = false;
     fe.injects = fe.injects || c.injects || ["index.html"];
+    fe.plugins = mergeArr(fe.plugins, c.plugins);
+    delete fe.external;
 
     const be = c.be || {};
     be.dir = be.dir || "backend";
@@ -47,16 +48,16 @@ export const parseConfig = (config = {}) => {
     be.format = (be.format || "esm");
     be.splitting = (be.format === "esm");
     be.injects = be.injects || [];
-    be.external = [...(be.external || []), ...builtinModules, "koa", "express", "socket.io", "chalk", "detect-port"];
-    be.plugins = [...(be.plugins || []), externalsPlugin];
+    be.plugins = mergeArr(be.plugins, c.plugins);
+
+    if (!be.external) { be.plugins.push(externalsPlugin); }
+    be.external = mergeArr(be.external, builtinModules, builtinModules.map(m => `node:${m}`));
     
     for (const x of [fe, be]) {
         x.srcdir = path.join(srcdir, x.dir);
         x.staticdir = path.join(srcdir, x.static);
         x.entries = (x.entries || ["index.js"]).map(e => path.join(x.srcdir, e));
         x.minify = x.minify != null ? x.minify : isBuild;
-        x.external = [...(x.external || []), ...external];
-        x.plugins = [...(x.plugins || []), ...plugins];
         x.loader = { ...(x.loader || {}), ...loader };
         x.jsx = x.jsx ? { ...jsx, ...x.jsx } : jsx;
         x.io = x.io || {};

@@ -49,3 +49,11 @@ export const mergeObj = (...objs) => {
     for (const key in flat) { fillObj(result, key, flat[key]); }
     return result;
 }
+
+export const mergeArr = (...arrs)=>{
+    const r = [];
+    for (const a of arrs) {
+        if (Array.isArray(a)) { r.push(...a); }
+    }
+    return r;
+}
