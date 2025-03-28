@@ -2,7 +2,7 @@
 export const importFiles = (files, opt={})=>{
     const prefix = opt.prefix || "./";
     const suffix = opt.suffix || "";
-    const trait = opt.trait ? opt.trait : ((nm, ex)=>ex[nm] || ex.default);
+    const trait = opt.trait ? opt.trait : ((ex, nm)=>ex[nm] || ex.default);
 
     const r = {};
 
