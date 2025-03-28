@@ -58,7 +58,7 @@ export default async (config = {}) => {
             if (knownPort === port) { return false; }
             servers.set(serverId, port);
             logmain(`Server id '${serverId}'`, `${knownPort ? "re" : ""}started at port '${port}'`);
-            if (autoOpen) { open(`http://localhost:${port}`); }ˇ
+            if (autoOpen) { open(`http://localhost:${port}`); }
             return true;
         });
     }
