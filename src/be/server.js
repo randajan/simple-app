@@ -58,6 +58,7 @@ export class Server extends EventEmitter {
             if (port) {
                 _p.portLast = port;
                 if (!info.isBuild) { std.tx("http", {id:this.id, port, autoOpen}); }
+                else { console.log(`Server id ${this.id} started at ${port}`); }
             }
             this.emit("state", _p.state, _p.port);
         }

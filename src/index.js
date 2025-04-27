@@ -35,9 +35,9 @@ export default async (config = {}) => {
     if (isBuild) {
         logbold.yellow(`Creating production build...`);
         await Promise.all([be.rebuild(true, true, true), fe.rebuild(true, true)]);
+        await fse.writeJSON(path.join(distdir, "package.json"), pkg, { spaces: 2 });
+
         logbold.green(`Succesfully builded ${distdir}`);
-        logbold.blue(`You can run it with 'node ${path.join(be.distdir)}'`);
-        
         esbuild.stop();
         return;
     }

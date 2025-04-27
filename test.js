@@ -16,6 +16,7 @@ sapp({
         name:"dev"
     },
     be:{
+        format:"cjs",
         io:{
             test:"bar"
         }
