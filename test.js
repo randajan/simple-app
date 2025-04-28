@@ -17,9 +17,6 @@ sapp({
     },
     be:{
         format:"esm",
-        io:{
-            test:"bar"
-        }
     },
     fe:{
         loader:{
