@@ -23,3 +23,7 @@ export const validateFormat = (format)=>{
     }
     return format;
 }
+
+export const reSlash = raw=>raw.replaceAll("\\", "/");
+
+export const relPath = (from, to)=>reSlash(path.relative(from, to));

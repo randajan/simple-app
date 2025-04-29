@@ -1,4 +1,4 @@
-import { log, pkg, validateFormat } from "./consts";
+import { log, pkg, relPath, validateFormat } from "./consts";
 import path from "path";
 import { buildFactory } from "./buildFactory";
 import { envFileName, parseEnvs } from "../uni/env";
@@ -40,7 +40,7 @@ export const parseConfig = (config = {}) => {
     be.dir = be.dir || "backend";
     be.distdir = path.join(distdir, be.dir);
     be.static = be.static || "private";
-    be.info = { ...(be.info || {}), ...info, dir:{ root:path.relative(be.dir, '.'), be:".", fe:path.relative(be.dir, fe.dir) } };
+    be.info = { ...(be.info || {}), ...info, dir:{ root:relPath(be.dir, '.'), be:".", fe:relPath(be.dir, fe.dir) } };
     be.format = validateFormat(be.format);
     be.splitting = (be.format === "esm");
     be.injects = be.injects || [];
