@@ -75,7 +75,7 @@ export const parseConfig = (config = {}) => {
         be.rebuild = async (rebuildStatic, cleanUp, rebuildEnv)=>{
             if (!rebuildEnv) { return rebuild(rebuildStatic, cleanUp); }
             const { sample:{ data, flat } } = parseEnvs(e.name, e.srcdir, true);
-            if (!isBuild) { await fse.copyFile(e.src, e.dist); }
+            await fse.copy(e.src, e.dist);
             rebuild = buildFactory(be, { data, flat });
             return rebuild(rebuildStatic, cleanUp);
         }
