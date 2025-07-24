@@ -8,6 +8,7 @@ sapp({
     demodir:"test/demo",
     distdir:"test/dist",
     srcdir:"test/src",
+    include:["yarn.lock"],
     info:{
         top:"best",
         arr:["three"]

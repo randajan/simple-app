@@ -28,7 +28,8 @@ sapp({
   distdir:"dist",           //directory of build
   srcdir:"src",             //directory of source code
   arcdir:"arc",             //directory for shared code by frontend and backend
-  staticdir:"static",       //static src folder name for files/folders structure that will be copied as distdir 
+  staticdir:"static",       //static src folder name for files/folders structure that will be copied as distdir
+  include:[],               //list of files to copy to distdir. Like yarn.lock, README.MD etc.
   rebuildBuffer:100,        //delay between src changed and rebuild happend
   plugins:[],               //global esbuild plugins
   loader:{},                //global esbuild loader

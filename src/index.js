@@ -16,7 +16,7 @@ export { log, pkg }
 
 
 export default async (config = {}) => {
-    const { isBuild, distdir, srcdir, arcdir, fe, be, env, rebuildBuffer } = parseConfig(config);
+    const { isBuild, distdir, srcdir, arcdir, fe, be, env, include, rebuildBuffer } = parseConfig(config);
     const logbold = log.bold;
     const logred = logbold.red;
     const logmain = log.inverse;
@@ -36,6 +36,11 @@ export default async (config = {}) => {
         logbold.yellow(`Creating production build...`);
         await Promise.all([be.rebuild(true, true, true), fe.rebuild(true, true)]);
         await fse.writeJSON(path.join(distdir, "package.json"), pkg, { spaces: 2 });
+        await Promise.all(include.map(async di=>{
+            const pth = path.join(process.cwd(), di);
+            try { await fse.copy(pth, path.join(distdir, di)); }
+            catch { logred(`Not found '${pth}'`); }
+        }));
 
         logbold.green(`Succesfully builded ${distdir}`);
         esbuild.stop();

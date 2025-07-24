@@ -16,6 +16,7 @@ export const parseConfig = (config = {}) => {
 
     const info = { ...(c.info ? c.info : {}), isBuild, name, description, version, author, guid };
     const rebuildBuffer = Math.max(0, Number(c.rebuildBuffer) || 100);
+    const include = c.include || [];
     const loader = c.loader || {};
     const jsx = c.jsx || {};
 
@@ -81,6 +82,6 @@ export const parseConfig = (config = {}) => {
         }
     }
 
-    return { isBuild, distdir, srcdir, arcdir, fe, be, env:c.env, rebuildBuffer }
+    return { isBuild, distdir, srcdir, arcdir, fe, be, env:c.env, include, rebuildBuffer }
 
 }
