@@ -11,7 +11,7 @@ export const parseConfig = (config = {}) => {
 
     const guid = Array(16).fill().map(_ => Math.random().toString(36).slice(2)).join('');
 
-    const { name, description, version, author } = pkg;
+    const { name, description, version, author, dependencies, peerDependencies } = pkg;
     const isBuild = c.isBuild = (c.isBuild ? true : false);
 
     const info = { ...(c.info ? c.info : {}), isBuild, name, description, version, author, guid };
@@ -41,7 +41,7 @@ export const parseConfig = (config = {}) => {
     be.dir = be.dir || "backend";
     be.distdir = path.join(distdir, be.dir);
     be.static = be.static || "private";
-    be.info = { ...(be.info || {}), ...info, dir:{ root:relPath(be.dir, '.'), be:".", fe:relPath(be.dir, fe.dir) } };
+    be.info = { ...(be.info || {}), ...info, dir:{ root:relPath(be.dir, '.'), be:".", fe:relPath(be.dir, fe.dir) }, dependencies:{...dependencies, ...peerDependencies} };
     be.format = validateFormat(be.format);
     be.splitting = (be.format === "esm");
     be.injects = be.injects || [];
