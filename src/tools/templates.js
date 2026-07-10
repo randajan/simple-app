@@ -36,9 +36,12 @@ setTimeout(_=>console.log(helloworld()));
 be.start(3000);
 `,
     fe:`
-import fe, { socket, info } from "@randajan/simple-app/fe";
+import fe, { initSocket, getSocket, info } from "@randajan/simple-app/fe";
 import helloworld from "../arc";
 import "./index.css";
+
+const ioExtraOptions = {}
+const socket = initSocket(ioExtraOptions);
 
 document.getElementById("root").innerText = helloworld();
 `,
