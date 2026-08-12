@@ -10,8 +10,9 @@ const createSocket = (options={}, isBuild)=>{
     isBuild = isBuild == null ? info.isBuild : !!isBuild;
     
     const opt = {...(defs?.io || {}), ...options};
+    const { namespace="", ...ioOpt } = opt;
 
-    const socket = socketIOClient(window.location.host, opt);
+    const socket = socketIOClient(window.location.host+namespace, ioOpt);
 
     if (isBuild) { return socket; }
 
